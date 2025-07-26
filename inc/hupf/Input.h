@@ -76,8 +76,8 @@ public:
       eePose_Study.set(7,0,(-eePose.get(3,0)*eePose_Study.get(0,0)+eePose.get(2,0)*eePose_Study.get(1,0)-eePose.get(1,0)*eePose_Study.get(2,0))/2);
     }
     //jcapco now: normalize
-    return eePose_Study*(0.5/Matrix::FrobeniusNorm(eePose_Study));
-    //return eePose_Study;
+    //return eePose_Study*(0.5/Matrix::FrobeniusNorm(eePose_Study));
+    return eePose_Study;
   };
 
   /**
