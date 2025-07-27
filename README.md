@@ -71,4 +71,5 @@ Many thanks to:
 Arthur Angerer, Manfred Husty, Saraleen Mae Manongsong, Martin Pfurner and Hans-Peter Schröcker.
 
 ## Citing
- Link to Zenodo DOI: Coming soon..
+ Link to Zenodo DOI: Coming soon.
+ 
