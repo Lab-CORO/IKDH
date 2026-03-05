@@ -1,0 +1,2 @@
+/usr/bin/ar qc libikdh.a CMakeFiles/ikdh.dir/src/ikdh.cpp.o
+/usr/bin/ranlib libikdh.a

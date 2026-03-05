@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/crx10ia.dir/examples/crx10ia.cpp.o -o crx10ia  libikdh.a libhupf.a
