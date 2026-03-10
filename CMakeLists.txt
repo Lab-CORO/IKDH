@@ -38,10 +38,14 @@ target_link_libraries(ikdh PRIVATE hupf)
 # ROBOTS_DIR defaults to "robots" (relative to the working directory).
 # Run executables from the repository root: ./build/demo
 add_executable(demo examples/demo.cpp)
-target_include_directories(demo PRIVATE include examples)
+target_include_directories(demo PRIVATE include)
 target_link_libraries(demo PRIVATE ikdh)
 
 add_executable(poly examples/poly.cpp)
-target_include_directories(poly PRIVATE include examples)
+target_include_directories(poly PRIVATE include)
 target_link_libraries(poly PRIVATE ikdh)
+
+add_executable(benchmark examples/benchmark.cpp)
+target_include_directories(benchmark PRIVATE include)
+target_link_libraries(benchmark PRIVATE ikdh)
 

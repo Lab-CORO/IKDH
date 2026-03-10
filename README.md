@@ -22,7 +22,7 @@ cmake --build build
 pip install robodk
 python3 tools/robodk_dh.py "Robot Name"
 # Connects to the running RoboDK session, extracts the Standard DH parameters,
-# and saves robots/<slug>.yaml automatically.
+# and saves robots/<name>.yaml automatically.
 ```
 
 **Option 2 — manually**, create `robots/<name>.yaml`:

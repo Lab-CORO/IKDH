@@ -27,21 +27,25 @@ static bool wrapAngle(double angle, double lo, double hi, double& out)
     return false;
 }
 
+// Multiply two homogeneous transforms where both have last row [0,0,0,1].
+// Exploits the fixed last row to skip 28 multiplications vs. the general 4×4 case.
 static void mul4(const double A[16], const double B[16], double C[16])
 {
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j) {
-            C[i*4+j] = 0;
-            for (int k = 0; k < 4; ++k)
-                C[i*4+j] += A[i*4+k] * B[k*4+j];
-        }
+    // Upper 3×3 rotation block + translation column.
+    for (int i = 0; i < 3; ++i) {
+        C[i*4+0] = A[i*4+0]*B[0] + A[i*4+1]*B[4] + A[i*4+2]*B[8];
+        C[i*4+1] = A[i*4+0]*B[1] + A[i*4+1]*B[5] + A[i*4+2]*B[9];
+        C[i*4+2] = A[i*4+0]*B[2] + A[i*4+1]*B[6] + A[i*4+2]*B[10];
+        C[i*4+3] = A[i*4+0]*B[3] + A[i*4+1]*B[7] + A[i*4+2]*B[11] + A[i*4+3];
+    }
+    // Last row is always [0,0,0,1].
+    C[12] = 0;  C[13] = 0;  C[14] = 0;  C[15] = 1;
 }
 
 // T_i = Rz(theta) * Tz(d) * Tx(a) * Rx(alpha)
-static void dhMatrix(double theta, double d, double a, double alpha, double T[16])
+static void dhMatrix(double theta, double d, double a, double ca, double sa, double T[16])
 {
     double ct = std::cos(theta), st = std::sin(theta);
-    double ca = std::cos(alpha), sa = std::sin(alpha);
 
     T[0]  = ct;  T[1]  = -st*ca;  T[2]  =  st*sa;  T[3]  = a*ct;
     T[4]  = st;  T[5]  =  ct*ca;  T[6]  = -ct*sa;  T[7]  = a*st;
@@ -89,6 +93,18 @@ static bool refineIK(const DHTable& dh, JointConfig& q, const Transform& T_targe
 {
     const double lambda = 1e-6;  // Tikhonov damping
 
+    // Precompute cos/sin of fixed DH alpha values (constant across all iterations).
+    double ca[6], sa[6];
+    for (int j = 0; j < 6; ++j) {
+        ca[j] = std::cos(dh.alpha[j]);
+        sa[j] = std::sin(dh.alpha[j]);
+    }
+
+    // T_accum[0] is always the identity (base frame); initialise once.
+    double T_accum[7][16];
+    for (int k = 0; k < 16; ++k) T_accum[0][k] = 0.0;
+    T_accum[0][0] = T_accum[0][5] = T_accum[0][10] = T_accum[0][15] = 1.0;
+
     for (int iter = 0; iter < maxIter; ++iter) {
 
         // ── FK with intermediate transforms ───────────────────────────────────
@@ -98,18 +114,13 @@ static bool refineIK(const DHTable& dh, JointConfig& q, const Transform& T_targe
         //   T_accum[1] = DH_0     (frame 0,    provides rotation axis for joint 1)
         //   ...
         //   T_accum[6] = DH_0*…*DH_5  = end-effector pose
-        double T_accum[7][16];
-
-        // Initialise T_accum[0] = Identity
-        for (int k = 0; k < 16; ++k) T_accum[0][k] = 0.0;
-        T_accum[0][0] = T_accum[0][5] = T_accum[0][10] = T_accum[0][15] = 1.0;
 
         for (int j = 0; j < 6; ++j) {
             double val = dh.revolute[j] ? q[j] * (M_PI / 180.0) : q[j];
             double jt  = dh.theta[j] + (dh.revolute[j] ? val : 0.0);
             double jd  = dh.d[j]     + (dh.revolute[j] ? 0.0 : val);
             double Ti[16];
-            dhMatrix(jt, jd, dh.a[j], dh.alpha[j], Ti);
+            dhMatrix(jt, jd, dh.a[j], ca[j], sa[j], Ti);
             mul4(T_accum[j], Ti, T_accum[j + 1]);
         }
 
@@ -169,12 +180,15 @@ static bool refineIK(const DHTable& dh, JointConfig& q, const Transform& T_targe
         }
 
         // Damped normal equations:  (J^T J + λ I) dq_rad = J^T err
-        double JTJ[6][6] = {};
-        double JTe[6]    = {};
+        // JTJ is symmetric: compute only the upper triangle, then mirror.
+        double JTJ[6][6];
+        double JTe[6] = {};
         for (int a = 0; a < 6; ++a) {
-            for (int b = 0; b < 6; ++b)
-                for (int k = 0; k < 12; ++k)
-                    JTJ[a][b] += J[k][a] * J[k][b];
+            for (int b = a; b < 6; ++b) {
+                double s = 0;
+                for (int k = 0; k < 12; ++k) s += J[k][a] * J[k][b];
+                JTJ[a][b] = JTJ[b][a] = s;
+            }
             JTJ[a][a] += lambda;
             for (int k = 0; k < 12; ++k)
                 JTe[a] += J[k][a] * err[k];
@@ -375,9 +389,13 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
         };
 
         // ── Phase 1 (always): standard magnitudes 1°, 5°, 10° ────────────────
+        // Adaptive early exit: if a magnitude adds no new solutions, subsequent
+        // magnitudes won't either (any ε > 0 breaks algebraic degeneracy equally).
         for (double eps : { 1.0 * M_PI/180.0, 5.0 * M_PI/180.0, 10.0 * M_PI/180.0 }) {
             if (result.size() >= 16) break;
+            const std::size_t before = result.size();
             runRotPerturbations(eps);
+            if (result.size() == before) break;  // no progress → skip remaining magnitudes
         }
 
         // ── Phase 2 (last resort): joint-space Halton sampling ───────────────
@@ -418,6 +436,12 @@ Transform forwardKin(const DHTable& dh, const JointConfig& q)
 {
     double T[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 
+    double ca[6], sa[6];
+    for (int i = 0; i < 6; ++i) {
+        ca[i] = std::cos(dh.alpha[i]);
+        sa[i] = std::sin(dh.alpha[i]);
+    }
+
     for (int i = 0; i < 6; ++i) {
         double val = dh.revolute[i] ? q[i] * M_PI / 180.0 : q[i];
 
@@ -425,7 +449,7 @@ Transform forwardKin(const DHTable& dh, const JointConfig& q)
         double joint_d     = dh.d[i]     + (dh.revolute[i] ? 0.0 : val);
 
         double Ti[16], Tnew[16];
-        dhMatrix(joint_theta, joint_d, dh.a[i], dh.alpha[i], Ti);
+        dhMatrix(joint_theta, joint_d, dh.a[i], ca[i], sa[i], Ti);
         mul4(T, Ti, Tnew);
         for (int k = 0; k < 16; ++k) T[k] = Tnew[k];
     }
