@@ -35,17 +35,13 @@ target_include_directories(ikdh
 target_link_libraries(ikdh PRIVATE hupf)
 
 # ── Demo executable ───────────────────────────────────────────────────────────
+# ROBOTS_DIR defaults to "robots" (relative to the working directory).
+# Run executables from the repository root: ./build/demo
 add_executable(demo examples/demo.cpp)
 target_include_directories(demo PRIVATE include examples)
 target_link_libraries(demo PRIVATE ikdh)
-target_compile_definitions(demo PRIVATE
-    ROBOTS_DIR="${CMAKE_SOURCE_DIR}/robots"
-)
 
 add_executable(poly examples/poly.cpp)
 target_include_directories(poly PRIVATE include examples)
 target_link_libraries(poly PRIVATE ikdh)
-target_compile_definitions(poly PRIVATE
-    ROBOTS_DIR="${CMAKE_SOURCE_DIR}/robots"
-)
 

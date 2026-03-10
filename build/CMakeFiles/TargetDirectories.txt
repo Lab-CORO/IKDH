@@ -1,6 +1,0 @@
-/Users/axel/axel/code/IKDH/build/CMakeFiles/hupf.dir
-/Users/axel/axel/code/IKDH/build/CMakeFiles/ikdh.dir
-/Users/axel/axel/code/IKDH/build/CMakeFiles/demo.dir
-/Users/axel/axel/code/IKDH/build/CMakeFiles/poly.dir
-/Users/axel/axel/code/IKDH/build/CMakeFiles/edit_cache.dir
-/Users/axel/axel/code/IKDH/build/CMakeFiles/rebuild_cache.dir

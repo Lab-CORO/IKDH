@@ -107,6 +107,11 @@ int main()
         auto r = Robots::loadRobot(robotPath("doosan_a0509.yaml"));
         run(r, {30.0, 45.0, 60.0, -20.0, 30.0, 10.0});
     }
+        // ── Doosan A0509 ─────────────────────────────────────────────────────────
+    {
+        auto r = Robots::loadRobot(robotPath("auctech_acr_12.yaml"));
+        run(r, {30.0, 45.0, 60.0, -20.0, 30.0, 10.0});
+    }
 
     return 0;
 }

@@ -393,7 +393,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
                 return r;
             };
             static const int bases[6] = { 2, 3, 5, 7, 11, 13 };
-            for (int s = 1; s <= 300 && result.size() < 16; ++s) {
+            for (int s = 1; s <= 100 && result.size() < 16; ++s) {
                 JointConfig q_seed;
                 for (int j = 0; j < 6; ++j)
                     q_seed[j] = _limits.lo[j]

@@ -111,7 +111,7 @@ adds a post-processing layer to recover solutions missed by the algebraic core:
 - **Perturbation sweep** (1°/5°/10° in 12 directions) bypasses algebraic singularities
 - **Joint flips** (J1/J4/J6 ± 180°) explore all solution basins
 - **Newton-Raphson refinement** (damped LS, analytical Jacobian) converges each seed back to the exact pose
-- **Halton joint-space sampling** (last resort, 300 quasi-random seeds) handles robots where the HuPf polynomial returns no real roots
+- **Halton joint-space sampling** (last resort, 100 quasi-random seeds) handles robots where the HuPf polynomial returns no real roots
 
 ### References
 

@@ -2,3 +2,4 @@
 *.ncb
 *.user
 /vs2008/libhupf_mine.vcproj
+build/

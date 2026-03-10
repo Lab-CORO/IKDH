@@ -1,2 +1,0 @@
-/usr/bin/ar qc libhupf.a CMakeFiles/hupf.dir/src/hupf/Calculate.cpp.o CMakeFiles/hupf.dir/src/hupf/ik.cpp.o
-/usr/bin/ranlib libhupf.a
