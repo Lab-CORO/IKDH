@@ -6,19 +6,16 @@ IK solution to a live RoboDK session, and reports the Cartesian position
 deviation measured by RoboDK's forward kinematics.
 
 Usage:
-    python3 tools/robodk_verify.py
+    python3 tools/robodk_verify.py [path/to/robot.yaml]
+
+    Default robot file: robots/gofa12.yaml
 
 Prerequisites:
     pip install robodk
     cmake --build build   # build/demo must exist
-
-Configuration: edit the block below.
 """
 
-import sys
-import re
-import time
-import subprocess
+import math, re, sys, time, subprocess
 
 try:
     from robodk.robolink import Robolink, ITEM_TYPE_ROBOT
@@ -26,25 +23,65 @@ except ImportError:
     print("robodk package not found. Install it with:  pip install robodk")
     sys.exit(1)
 
-# ── Configuration ─────────────────────────────────────────────────────────────
+# ── Load robot YAML ───────────────────────────────────────────────────────────
 
-ROBOT_LABEL  = 'ABB GoFa CRB 15000-12 (pose)'   # must match the "-> <name>" header in demo output
-ROBOT_RDK    = 'ABB CRB 15000 GoFa 12'   # exact robot name in the RoboDK scene
-JOINT_LIMITS = [                   # [lo, hi] in degrees, per joint — must match robots.h
-    (-270.0,  270.0),   # J1
-    (-180.0,  180.0),   # J2
-    (-225.0,   85.0),   # J3
-    (-180.0,  180.0),   # J4
-    (-180.0,  180.0),   # J5
-    (-270.0,  270.0),   # J6
-]
-INTERVAL     = 5.0       # seconds between solutions
+def parse_pi_expr(s):
+    s = s.strip()
+    neg = s.startswith('-')
+    t = s.lstrip('-').strip()
+    if t == 'pi':
+        val = math.pi
+    elif t.startswith('pi/'):
+        val = math.pi / float(t[3:])
+    elif t.startswith('pi*'):
+        val = math.pi * float(t[3:])
+    else:
+        val = float(t)
+    return -val if neg else val
+
+def parse_array(line):
+    lb, rb = line.find('['), line.find(']')
+    return [parse_pi_expr(x) for x in line[lb+1:rb].split(',')]
+
+def load_robot_yaml(path):
+    robot = {'name': '', 'dh': {}, 'limits': []}
+    section = None
+    with open(path) as f:
+        for line in f:
+            s = line.split('#')[0].rstrip()
+            if not s.strip():
+                continue
+            if 'name:' in s:
+                robot['name'] = s.split(':', 1)[1].strip()
+            elif s.strip() == 'dh:':
+                section = 'dh'
+            elif s.strip() == 'limits:':
+                section = 'limits'
+            elif section == 'dh' and '[' in s:
+                if 'a:' in s:         robot['dh']['a']     = parse_array(s)
+                elif 'd:' in s:       robot['dh']['d']     = parse_array(s)
+                elif 'alpha:' in s:   robot['dh']['alpha'] = parse_array(s)
+                elif 'theta:' in s:   robot['dh']['theta'] = parse_array(s)
+            elif section == 'limits' and '[' in s:
+                row = parse_array(s)
+                robot['limits'].append((row[0], row[1]))
+    return robot
+
+# ── Configuration ──────────────────────────────────────────────────────────────
+
+YAML_FILE = sys.argv[1] if len(sys.argv) > 1 else "robots/gofa12.yaml"
+robot_cfg = load_robot_yaml(YAML_FILE)
+
+ROBOT_LABEL  = robot_cfg['name']        # must match "-> <name>" header in demo output
+ROBOT_RDK    = robot_cfg['name']        # exact robot name in the RoboDK scene
+JOINT_LIMITS = robot_cfg['limits']      # [(lo, hi), ...] in degrees
+INTERVAL     = 0.5                      # seconds between solutions
 DEMO_BIN     = 'build/demo'
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def wrap_angle(angle, lo, hi):
-    """Map angle into [lo, hi] by ±360° steps. Returns None if impossible."""
+    """Map angle into [lo, hi] by ±360 steps. Returns None if impossible."""
     angle = angle % 360.0
     if angle > 180.0:
         angle -= 360.0
@@ -107,8 +144,8 @@ ref_joints  = solutions[0][0] if solutions else None
 pose_ref    = robot.SolveFK(ref_joints) if ref_joints else None
 xr, yr, zr  = pos_xyz(pose_ref) if pose_ref else (None, None, None)
 
-print(f"{'Sol':>4}  {'joint angles (deg)':^54}  {'FK err (internal)':>18}  {'Δ pos RoboDK':>12}")
-print("-" * 100)
+print(f"{'Sol':>4}  {'joint angles (deg)':^54}  {'FK err (internal)':>18}  {'delta pos RoboDK':>16}")
+print("-" * 104)
 
 # ── 4. Display each solution ──────────────────────────────────────────────────
 
@@ -120,7 +157,7 @@ for i, (angles, err) in enumerate(solutions):
     delta    = ((x-xr)**2 + (y-yr)**2 + (z-zr)**2)**0.5 if xr is not None else float('nan')
 
     angles_str = '  '.join(f'{a:8.3f}' for a in angles)
-    print(f"  {i:>2}  [{angles_str}]  {err:.1e}  Δ={delta:.2f} mm")
+    print(f"  {i:>2}  [{angles_str}]  {err:.1e}  delta={delta:.2f} mm")
 
     time.sleep(INTERVAL)
 

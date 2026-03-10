@@ -12,10 +12,15 @@ static void printPoly(const char* label, const std::vector<double>& c)
     printf("\n");
 }
 
+#ifndef ROBOTS_DIR
+#  define ROBOTS_DIR "robots"
+#endif
+
 int main()
 {
-    auto dh     = Robots::gofa5_dh();
-    IKDH::Solver solver(dh, Robots::gofa5_limits());
+    auto robot = Robots::loadRobot(ROBOTS_DIR "/gofa5.yaml");
+    IKDH::Solver solver(robot.dh, robot.limits);
+    auto& dh = robot.dh;
 
     IKDH::Transform T1 = IKDH::forwardKin(dh, {0,  0,  0,  0,  0,  0});
     IKDH::Transform T2 = IKDH::forwardKin(dh, {10,-30, 60,-20, 45, 15});

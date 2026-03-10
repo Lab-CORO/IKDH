@@ -1,208 +1,149 @@
 #pragma once
 
 #include <ikdh.h>
-#include <cmath>
 
-// Predefined DH tables and joint limits for common 6-DOF robots.
-// Units: a, d in meters; alpha, theta in radians; joint limits in degrees.
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+// Minimal YAML robot loader — no external dependencies.
+// Expected format: robots/<name>.yaml  (see robots/ directory for examples)
 
 namespace Robots {
 
-// ── Universal Robots UR5e ─────────────────────────────────────────────────────
-inline IKDH::DHTable ur5e_dh()
+namespace detail {
+
+// Parse a pi-expression like "pi/2", "-pi/2", "pi", "0", "1.5", etc.
+inline double parsePiExpr(const std::string& s)
 {
-    IKDH::DHTable dh;
-    const double a[]     = { 0.0,    -0.425,  -0.3922,  0.0,     0.0,     0.0    };
-    const double d[]     = { 0.1625,  0.0,     0.0,     0.1333,  0.0997,  0.0996 };
-    const double alpha[] = { M_PI/2,  0.0,     0.0,     M_PI/2, -M_PI/2,  0.0   };
-    const double theta[] = { 0.0,     0.0,     0.0,     0.0,     0.0,     0.0   };
-    for (int i = 0; i < 6; ++i) {
-        dh.a[i] = a[i]; dh.d[i] = d[i];
-        dh.alpha[i] = alpha[i]; dh.theta[i] = theta[i];
-        dh.revolute[i] = true;
+    std::string t = s;
+    // strip whitespace
+    t.erase(0, t.find_first_not_of(" \t\r\n"));
+    auto e = t.find_last_not_of(" \t\r\n");
+    if (e != std::string::npos) t = t.substr(0, e + 1);
+
+    bool neg = false;
+    if (!t.empty() && t[0] == '-') { neg = true; t = t.substr(1); }
+
+    double val;
+    if (t == "pi") {
+        val = M_PI;
+    } else if (t.substr(0, 3) == "pi/") {
+        val = M_PI / std::stod(t.substr(3));
+    } else if (t.substr(0, 3) == "pi*") {
+        val = M_PI * std::stod(t.substr(3));
+    } else {
+        val = std::stod(t);
     }
-    return dh;
+    return neg ? -val : val;
 }
 
-inline IKDH::JointLimits ur5e_limits()
+// Parse "[v1, v2, v3, v4, v5, v6]" into a 6-element vector.
+inline std::vector<double> parseArray(const std::string& line)
 {
-    return IKDH::JointLimits({
-        {-360.0, 360.0},   // J1
-        {-360.0, 360.0},   // J2
-        {-360.0, 360.0},   // J3
-        {-360.0, 360.0},   // J4
-        {-360.0, 360.0},   // J5
-        {-360.0, 360.0},   // J6
-    });
+    std::vector<double> out;
+    auto lb = line.find('[');
+    auto rb = line.find(']');
+    if (lb == std::string::npos || rb == std::string::npos)
+        throw std::runtime_error("Expected '[...]' in: " + line);
+
+    std::string inner = line.substr(lb + 1, rb - lb - 1);
+    std::istringstream ss(inner);
+    std::string token;
+    while (std::getline(ss, token, ','))
+        out.push_back(parsePiExpr(token));
+    return out;
 }
 
-// ── ABB GoFa CRB 15000-5 ──────────────────────────────────────────────────────
-inline IKDH::DHTable gofa5_dh()
+// Strip inline YAML comment (#...) and trailing whitespace.
+inline std::string stripComment(const std::string& s)
 {
-    IKDH::DHTable dh;
-    const double a[]     = { 0.0,    0.444,  0.110,  0.0,    0.080,  0.0  };
-    const double d[]     = { 0.265,  0.0,    0.0,    0.470,  0.0,    0.101};
-    const double alpha[] = {-M_PI/2, 0.0,   -M_PI/2, M_PI/2,-M_PI/2, 0.0 };
-    const double theta[] = { 0.0,   -M_PI/2, 0.0,    0.0,    0.0,    M_PI};
-    for (int i = 0; i < 6; ++i) {
-        dh.a[i] = a[i]; dh.d[i] = d[i];
-        dh.alpha[i] = alpha[i]; dh.theta[i] = theta[i];
-        dh.revolute[i] = true;
+    auto pos = s.find('#');
+    std::string t = (pos != std::string::npos) ? s.substr(0, pos) : s;
+    auto e = t.find_last_not_of(" \t\r\n");
+    return (e != std::string::npos) ? t.substr(0, e + 1) : "";
+}
+
+} // namespace detail
+
+struct Robot {
+    std::string      name;
+    IKDH::DHTable    dh;
+    IKDH::JointLimits limits;
+};
+
+inline Robot loadRobot(const std::string& path)
+{
+    std::ifstream f(path);
+    if (!f.is_open())
+        throw std::runtime_error("Cannot open robot file: " + path);
+
+    Robot robot;
+    std::vector<double> a, d, alpha, theta;
+    std::string line;
+    std::string section;  // "dh" or "limits"
+    int limCount = 0;
+
+    while (std::getline(f, line)) {
+        std::string s = detail::stripComment(line);
+        if (s.empty()) continue;
+
+        // Detect section headers
+        if (s.find("dh:") != std::string::npos && s.find(':') != std::string::npos) {
+            section = "dh"; continue;
+        }
+        if (s.find("limits:") != std::string::npos) {
+            section = "limits"; continue;
+        }
+
+        // name field
+        if (s.find("name:") != std::string::npos) {
+            auto pos = s.find(':');
+            std::string v = s.substr(pos + 1);
+            v.erase(0, v.find_first_not_of(" \t"));
+            robot.name = v;
+            continue;
+        }
+
+        if (section == "dh" && s.find('[') != std::string::npos) {
+            // Match key: strip leading whitespace and check prefix
+            std::string trimmed = s;
+            trimmed.erase(0, trimmed.find_first_not_of(" \t"));
+            if      (trimmed.substr(0, 6) == "alpha:") alpha = detail::parseArray(s);
+            else if (trimmed.substr(0, 6) == "theta:") theta = detail::parseArray(s);
+            else if (trimmed.substr(0, 2) == "a:")     a     = detail::parseArray(s);
+            else if (trimmed.substr(0, 2) == "d:")     d     = detail::parseArray(s);
+        }
+
+        if (section == "limits" && s.find('[') != std::string::npos && limCount < 6) {
+            auto row = detail::parseArray(s);
+            if (row.size() >= 2) {
+                robot.limits.lo[limCount] = row[0];
+                robot.limits.hi[limCount] = row[1];
+                ++limCount;
+            }
+        }
     }
-    return dh;
-}
 
-inline IKDH::JointLimits gofa5_limits()
-{
-    return IKDH::JointLimits({
-        {-180.0,  180.0},  // J1
-        {-180.0,  180.0},  // J2
-        {-225.0,   85.0},  // J3
-        {-180.0,  180.0},  // J4
-        {-180.0,  180.0},  // J5
-        {-180.0,  180.0},  // J6
-    });
-}
+    if (a.size() != 6 || d.size() != 6 || alpha.size() != 6 || theta.size() != 6)
+        throw std::runtime_error("DH table incomplete in: " + path);
+    if (limCount != 6)
+        throw std::runtime_error("Joint limits incomplete in: " + path);
 
-// ── ABB CRB 15000 10 ──────────────────────────────────────────────────────────
-inline IKDH::DHTable abb_crb_15000_10_dh()
-{
-    IKDH::DHTable dh;
-    const double a[]     = { 0.15 , 0.707, 0.11 , 0.0  , 0.08 , 0.0   };
-    const double d[]     = { 0.4  , 0.0  , 0.0  , 0.637, 0.0  , 0.101 };
-    const double alpha[] = { -M_PI/2, 0.0    , -M_PI/2, M_PI/2 , -M_PI/2, 0.0     };
-    const double theta[] = { 0.0    , -M_PI/2, 0.0    , 0.0    , 0.0    , M_PI    };
     for (int i = 0; i < 6; ++i) {
-        dh.a[i] = a[i]; dh.d[i] = d[i];
-        dh.alpha[i] = alpha[i]; dh.theta[i] = theta[i];
-        dh.revolute[i] = true;
+        robot.dh.a[i]       = a[i];
+        robot.dh.d[i]       = d[i];
+        robot.dh.alpha[i]   = alpha[i];
+        robot.dh.theta[i]   = theta[i];
+        robot.dh.revolute[i] = true;
     }
-    return dh;
-}
 
-inline IKDH::JointLimits abb_crb_15000_10_limits()
-{
-    return IKDH::JointLimits({
-        { -270.0,   270.0},  // J1
-        { -180.0,   180.0},  // J2
-        { -225.0,    85.0},  // J3
-        { -180.0,   180.0},  // J4
-        { -180.0,   180.0},  // J5
-        { -270.0,   270.0}   // J6
-    });
-}
-
-inline IKDH::DHTable abb_crb_15000_gofa_12_dh()
-{
-    IKDH::DHTable dh;
-    const double a[]     = { 0.0  , 0.707, 0.11 , 0.0  , 0.08 , 0.0   };
-    const double d[]     = { 0.338, 0.0  , -0.0 , 0.534, 0.0  , 0.101 };
-    const double alpha[] = { -M_PI/2, 0.0    , -M_PI/2, M_PI/2 , -M_PI/2, 0.0     };
-    const double theta[] = { 0.0    , -M_PI/2, 0.0    , 0.0    , 0.0    , M_PI    };
-    for (int i = 0; i < 6; ++i) {
-        dh.a[i] = a[i]; dh.d[i] = d[i];
-        dh.alpha[i] = alpha[i]; dh.theta[i] = theta[i];
-        dh.revolute[i] = true;
-    }
-    return dh;
-}
-
-inline IKDH::JointLimits abb_crb_15000_gofa_12_limits()
-{
-    return IKDH::JointLimits({
-        { -270.0,   270.0},  // J1
-        { -180.0,   180.0},  // J2
-        { -225.0,    85.0},  // J3
-        { -180.0,   180.0},  // J4
-        { -180.0,   180.0},  // J5
-        { -270.0,   270.0}   // J6
-    });
-}
-
-// ── Fanuc CRX-5iA ─────────────────────────────────────────────────────────────
-inline IKDH::DHTable fanuc_crx_5ia_dh()
-{
-    IKDH::DHTable dh;
-    const double a[]     = { 0.0 , 0.41, 0.0 , 0.0 , 0.0 , 0.0  };
-    const double d[]     = { 0.185, 0.0  , 0.0  , 0.43 , -0.13, 0.145 };
-    const double alpha[] = { -M_PI/2, 0.0    , -M_PI/2, M_PI/2 , -M_PI/2, 0.0     };
-    const double theta[] = { 0.0    , -M_PI/2, 0.0    , 0.0    , 0.0    , 0.0     };
-    for (int i = 0; i < 6; ++i) {
-        dh.a[i] = a[i]; dh.d[i] = d[i];
-        dh.alpha[i] = alpha[i]; dh.theta[i] = theta[i];
-        dh.revolute[i] = true;
-    }
-    return dh;
-}
-
-inline IKDH::JointLimits fanuc_crx_5ia_limits()
-{
-    return IKDH::JointLimits({
-        { -200.0,   200.0},  // J1
-        { -180.0,   180.0},  // J2
-        { -310.0,   310.0},  // J3
-        { -190.0,   190.0},  // J4
-        { -180.0,   180.0},  // J5
-        { -225.0,   225.0}   // J6
-    });
-}
-
-// ── Fanuc CRX-10iA ────────────────────────────────────────────────────────────
-inline IKDH::DHTable fanuc_crx_10ia_dh()
-{
-    IKDH::DHTable dh;
-    // Converted from Modified DH (RoboDK) to Standard DH used by this solver.
-    // Rule: alpha^s[i] = alpha^m[i+1], a^s[i] = a^m[i+1], theta/d unchanged.
-    const double a[]     = { 0.0,      0.540,    0.0,      0.0,      0.0,      0.0     };
-    const double d[]     = { 0.245,    0.0,      0.0,      0.540,   -0.150,    0.160   };
-    const double alpha[] = {-M_PI/2,   0.0,     -M_PI/2,  M_PI/2, -M_PI/2,   0.0     };
-    const double theta[] = { 0.0,     -M_PI/2,   0.0,      0.0,      0.0,      0.0     };
-    for (int i = 0; i < 6; ++i) {
-        dh.a[i] = a[i]; dh.d[i] = d[i];
-        dh.alpha[i] = alpha[i]; dh.theta[i] = theta[i];
-        dh.revolute[i] = true;
-    }
-    return dh;
-}
-
-inline IKDH::JointLimits fanuc_crx_10ia_limits()
-{
-    return IKDH::JointLimits({
-        { -180.0,   180.0},  // J1
-        { -180.0,   180.0},  // J2
-        { -360.0,   430.0},  // J3
-        { -190.0,   190.0},  // J4
-        { -180.0,   180.0},  // J5
-        { -190.0,   190.0}   // J6
-    });
-}
-
-// ── Doosan Robotics A0509 White ───────────────────────────────────────────────
-inline IKDH::DHTable doosan_robotics_a0509_white_dh()
-{
-    IKDH::DHTable dh;
-    const double a[]     = { 0.0  , 0.409, 0.0  , 0.0  , 0.0  , 0.0   };
-    const double d[]     = { 0.155, 0.0  , -0.0 , 0.367, 0.0  , 0.124 };
-    const double alpha[] = { -M_PI/2, 0.0    , -M_PI/2, M_PI/2 , -M_PI/2, 0.0     };
-    const double theta[] = { 0.0    , -M_PI/2, -M_PI/2, 0.0    , 0.0    , M_PI/2  };
-    for (int i = 0; i < 6; ++i) {
-        dh.a[i] = a[i]; dh.d[i] = d[i];
-        dh.alpha[i] = alpha[i]; dh.theta[i] = theta[i];
-        dh.revolute[i] = true;
-    }
-    return dh;
-}
-
-inline IKDH::JointLimits doosan_robotics_a0509_white_limits()
-{
-    return IKDH::JointLimits({
-        { -360.0,   360.0},  // J1
-        { -360.0,   360.0},  // J2
-        { -150.0,   150.0},  // J3
-        { -360.0,   360.0},  // J4
-        { -360.0,   360.0},  // J5
-        { -360.0,   360.0}   // J6
-    });
+    return robot;
 }
 
 } // namespace Robots

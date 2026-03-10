@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cmath>
 #include <initializer_list>
 #include <utility>
 #include <vector>
@@ -77,5 +78,24 @@ private:
 // Compute forward kinematics.
 // q[i] is in degrees (revolute) or meters (prismatic).
 Transform forwardKin(const DHTable& dh, const JointConfig& q);
+
+// Build a Transform from a RoboDK-style pose:
+//   x, y, z   in millimetres  →  stored in metres
+//   rx, ry, rz in degrees     →  intrinsic Rz*Ry*Rx rotation (RoboDK convention)
+inline Transform poseFromXYZRPW(double x_mm, double y_mm, double z_mm,
+                                 double rx_deg, double ry_deg, double rz_deg)
+{
+    const double deg = M_PI / 180.0;
+    double rx = rx_deg * deg, ry = ry_deg * deg, rz = rz_deg * deg;
+    double cx = std::cos(rx), sx = std::sin(rx);
+    double cy = std::cos(ry), sy = std::sin(ry);
+    double cz = std::cos(rz), sz = std::sin(rz);
+    Transform T;
+    T[ 0] = cy*cz;            T[ 1] = cz*sx*sy - cx*sz; T[ 2] = cx*cz*sy + sx*sz; T[ 3] = x_mm * 1e-3;
+    T[ 4] = cy*sz;            T[ 5] = cx*cz + sx*sy*sz; T[ 6] = cx*sy*sz - cz*sx; T[ 7] = y_mm * 1e-3;
+    T[ 8] = -sy;              T[ 9] = cy*sx;             T[10] = cx*cy;             T[11] = z_mm * 1e-3;
+    T[12] = 0; T[13] = 0; T[14] = 0; T[15] = 1;
+    return T;
+}
 
 } // namespace IKDH

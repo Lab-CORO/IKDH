@@ -227,20 +227,33 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__exception/nested_exception.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__exception/operations.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__exception/terminate.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/path.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__format/enable_insertable.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/binary_function.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/binary_negate.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/bind.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/binder1st.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/binder2nd.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/function.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/hash.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/identity.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/invoke.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/is_transparent.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/mem_fn.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/mem_fun_ref.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/operations.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_binary_function.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_unary_function.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/ranges_operations.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/reference_wrapper.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/unary_function.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/unary_negate.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/weak_result_type.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/array.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/bit_reference.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/byte.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/complex.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/deque.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/fstream.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/functional.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/ios.h \
@@ -249,7 +262,9 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/memory_resource.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/ostream.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/pair.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/queue.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/sstream.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/stack.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/streambuf.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/string.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/string_view.h \
@@ -257,6 +272,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/tuple.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/variant.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/vector.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ios/fpos.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/access.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/advance.h \
@@ -268,6 +284,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/default_sentinel.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/distance.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/empty.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/erase_if_container.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/front_insert_iterator.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/incrementable_traits.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/insert_iterator.h \
@@ -283,6 +300,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/ostream_iterator.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/ostreambuf_iterator.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/prev.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/ranges_iterator_traits.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/readable_traits.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/reverse_access.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/reverse_iterator.h \
@@ -356,10 +374,14 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/exceptions.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/global_new_delete.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/global_typed_new_delete.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/launder.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/new_handler.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/nothrow_t.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/placement_new_delete.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__node_handle \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__numeric/partial_sum.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ostream/basic_ostream.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ostream/put_character_sequence.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/is_valid.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/log2.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/uniform_int_distribution.h \
@@ -408,6 +430,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/aligned_storage.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/aligned_union.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/alignment_of.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/can_extract_key.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/common_reference.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/common_type.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/conditional.h \
@@ -435,6 +458,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_base_of.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_bounded_array.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_callable.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_char_like_type.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_class.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_compound.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_const.h \
@@ -498,6 +522,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/rank.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_all_extents.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_const.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_const_ref.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_cv.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_cvref.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_extent.h \
@@ -505,6 +530,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_reference.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_volatile.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/result_of.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/strip_signature.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/type_identity.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/type_list.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/underlying_type.h \
@@ -544,6 +570,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/array \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/atomic \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/bit \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/bitset \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cctype \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cerrno \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/climits \
@@ -561,11 +588,18 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ctype.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cwchar \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cwctype \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/deque \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/errno.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/exception \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/filesystem \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/format \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/fstream \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/functional \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/initializer_list \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iomanip \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ios \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iosfwd \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/istream \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iterator \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/limits \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/locale \
@@ -574,7 +608,12 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/mutex \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/new \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/optional \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ostream \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/print \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/queue \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ratio \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/sstream \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/stack \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/stddef.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/stdexcept \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/stdint.h \
@@ -588,6 +627,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/tuple \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/type_traits \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/typeinfo \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/utility \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/variant \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/vector \
@@ -712,6 +752,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/types.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/wait.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/time.h \
+  /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/wchar.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/wctype.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/xlocale.h \
@@ -767,6 +808,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/wchar.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/unistd.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/wait.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/types.h:
@@ -821,8 +864,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_ino64_t.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_in_addr_t.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_id_t.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_gid_t.h:
@@ -830,8 +871,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_fsfilcnt_t.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_fsblkcnt_t.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_fd_zero.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_fd_setsize.h:
 
@@ -855,17 +894,11 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/stdlib.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/stdint.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/stddef.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/pthread/qos.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/math.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/malloc/_ptrcheck.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/machine/types.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/machine/signal.h:
 
@@ -886,6 +919,10 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/vector:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/variant:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/machine/types.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/typeinfo:
 
@@ -909,9 +946,23 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ratio:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/print:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ostream:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/optional:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iosfwd:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/iomanip:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/functional:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/math.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/fstream:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/format:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/ctype.h:
 
@@ -995,13 +1046,19 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/type_identity.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/strip_signature.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_pointer.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_extent.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_const_ref.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_const.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/machine/_endian.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/bitset:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/negation.h:
 
@@ -1099,6 +1156,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_compound.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_char_like_type.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_nlink_t.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_base_of.h:
@@ -1163,6 +1222,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/add_cv_quals.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/deque:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/tuple_types.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/tuple_like_no_subrange.h:
@@ -1179,41 +1240,33 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/make_tuple_types.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_posix_availability.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/signal.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__chrono/steady_clock.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/find_index.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/ignore.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_useconds_t.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_enum.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_void.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/shared_count.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/support.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/id.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/poll_with_backoff.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/throw_system_error.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ranges/concepts.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/system_error.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/error_code.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/error_condition.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/error_category.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cstring:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/errc.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_int64_t.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__string/extern_template_lists.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/Availability.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__string/char_traits.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__std_mbstate_t.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__split_buffer:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/poll_with_backoff.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/lower_bound.h:
 
@@ -1231,7 +1284,11 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ranges/container_compatible_range.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ostream/put_character_sequence.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/nothrow_t.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/launder.h:
 
 /Library/Developer/CommandLineTools/usr/lib/clang/17/include/__stddef_offsetof.h:
 
@@ -1267,6 +1324,12 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/uninitialized_algorithms.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_enum.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/id.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/shared_count.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/raw_storage_iterator.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/make_projected.h:
@@ -1285,7 +1348,11 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/allocation_guard.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/stack:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/allocate_at_least.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/deque.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/align.h:
 
@@ -1294,10 +1361,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/pointer_traits.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/traits.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/signal.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/find_index.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/errno.h:
 
@@ -1321,17 +1384,13 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/inverse_hyperbolic_functions.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/noexcept_move_assign_container.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/find_end.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/hypot.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/gamma.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types/_uint32_t.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/fma.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_binary_function.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/fdim.h:
 
@@ -1344,6 +1403,12 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types/_uintmax_t.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/error_functions.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__locale_dir/support/bsd_like.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__concepts/swappable.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__node_handle:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/arm/_endian.h:
 
@@ -1365,8 +1430,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/unreachable_sentinel.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/error_condition.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/memory:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__cstddef/size_t.h:
@@ -1377,7 +1440,7 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/readable_traits.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/prev.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/ranges_iterator_traits.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/add_pointer.h:
 
@@ -1386,6 +1449,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_trivial.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__condition_variable/condition_variable.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/unary_negate.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/iterator_traits.h:
 
@@ -1399,6 +1464,12 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/front_insert_iterator.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/pair.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__atomic/atomic_sync.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/erase_if_container.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/minmax.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/istreambuf_iterator.h:
@@ -1406,12 +1477,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_fd_isset.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/empty.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_time_t.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/ostream.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__string/constexpr_c_functions.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__compare/compare_three_way_result.h:
 
@@ -1447,6 +1512,10 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/aliasing_iterator.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/replace_copy.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_stdlib.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/variant.h:
@@ -1460,6 +1529,18 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/string.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/sstream.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/sstream:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/comp.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/queue.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_time_t.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__string/constexpr_c_functions.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/ostream.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cstdlib:
 
@@ -1493,6 +1574,22 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/ranges_operations.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__iterator/prev.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/function.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/mem_fun_ref.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/runetype.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_locale.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/mem_fn.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/stdint.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/is_transparent.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__utility/element_count.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/uses_allocator.h:
@@ -1502,6 +1599,14 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_implicitly_default_constructible.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/invoke.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/noexcept_move_assign_container.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/find_end.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/hypot.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/bind.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/partial_sort.h:
 
@@ -1557,11 +1662,13 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__config_site:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__locale_dir/support/bsd_like.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/error_code.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__concepts/swappable.h:
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ranges/concepts.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__concepts/semiregular.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/can_extract_key.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/simd_utils.h:
 
@@ -1619,6 +1726,12 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/inout_ptr.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_posix_availability.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/ignore.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__chrono/steady_clock.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/inverse_trigonometric_functions.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/bit_reference.h:
@@ -1640,6 +1753,10 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/any_of.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__concepts/equality_comparable.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/support/pthread.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/binder1st.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__bit/blsr.h:
 
@@ -1664,10 +1781,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__mbstate_t.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/includes.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/sort_heap.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/tuple_like_ext.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ranges/subrange.h:
 
@@ -1702,6 +1815,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/replace_if.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__memory/unique_temporary_buffer.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/istream:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_trivially_constructible.h:
 
@@ -1759,7 +1874,15 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__bit/bit_cast.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__ostream/basic_ostream.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/hash.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/xlocale/_string.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__compare/synth_three_way.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/binary_negate.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/set_union.h:
 
@@ -1778,12 +1901,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/generate.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/set_difference.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_useconds_t.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_void.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/support.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/search_n.h:
 
@@ -1816,6 +1933,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_assignable.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/unwrap_range.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/queue:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/remove_if.h:
 
@@ -1883,6 +2002,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/partial_sort_copy.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/stack.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/ctype.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__cstddef/byte.h:
@@ -1894,8 +2015,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__vector/vector.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/nth_element.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__thread/support/pthread.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_rune_t.h:
 
@@ -1951,8 +2070,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__concepts/predicate.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/error_category.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_specialization.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/abs.h:
@@ -2001,10 +2118,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/is_heap_until.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/xlocale/_string.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__compare/synth_three_way.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/min_max.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/for_each_segment.h:
@@ -2036,12 +2149,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/for_each.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/__xlocale.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/comp.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/runetype.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_locale.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/binary_search.h:
 
@@ -2075,6 +2182,10 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/all_of.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__string/char_traits.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/Availability.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__atomic/aliases.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types.h:
@@ -2086,6 +2197,10 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_volatile.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/find_segment_if.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tuple/tuple_like_ext.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/sort_heap.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_time.h:
 
@@ -2131,6 +2246,8 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/malloc/_malloc_type.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/filesystem:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__utility/exchange.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__chrono/convert_to_timespec.h:
@@ -2141,6 +2258,12 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/arm/limits.h:
 
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_int64_t.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__string/extern_template_lists.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/path.h:
+
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_abort.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types/_uint8_t.h:
@@ -2148,6 +2271,10 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/adjacent_find.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types/_uint64_t.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_fd_zero.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/pointer_to_unary_function.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_off_t.h:
 
@@ -2169,13 +2296,9 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__atomic/atomic.h:
 
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/replace_copy.h:
-
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/remove_cvref.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_types/_wctrans_t.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__system_error/system_error.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/streambuf.h:
 
@@ -2184,6 +2307,10 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/alloca.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__new/new_handler.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/_types/_in_addr_t.h:
+
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__functional/binder2nd.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__atomic/atomic_flag.h:
 
@@ -2212,10 +2339,6 @@ CMakeFiles/poly.dir/examples/poly.cpp.o: /Users/axel/axel/code/IKDH/examples/pol
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__math/hyperbolic_functions.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__atomic/to_gcc_order.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__atomic/atomic_sync.h:
-
-/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/pair.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/lazy.h:
 

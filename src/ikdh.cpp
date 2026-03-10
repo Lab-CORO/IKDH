@@ -320,29 +320,23 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
         };
 
         // Try a seed and its shoulder/wrist flip variants.
-        // Flipping J1 by ±180° (shoulder flip) or J4 by ±180° (wrist flip)
-        // jumps to solution basins that perturbation alone cannot reach via Newton.
+        // Flipping J1 by ±180° (shoulder flip), J4 by ±180° (wrist flip), or
+        // J6 by ±180° (tool flip) jumps to solution basins unreachable by Newton
+        // alone.  All 8 combinations of the three binary flips are tried.
         auto tryWithFlips = [&](JointConfig q) {
-            tryRefineAndAdd(q);
-            JointConfig qf = q; qf[0] += 180.0; tryRefineAndAdd(qf);
-            qf = q;             qf[3] += 180.0; tryRefineAndAdd(qf);
-            qf = q; qf[0] += 180.0; qf[3] += 180.0; tryRefineAndAdd(qf);
+            for (int mask = 0; mask < 8; ++mask) {
+                JointConfig qf = q;
+                if (mask & 1) qf[0] += 180.0;  // J1 flip
+                if (mask & 2) qf[3] += 180.0;  // J4 flip
+                if (mask & 4) qf[5] += 180.0;  // J6 flip
+                tryRefineAndAdd(qf);
+            }
         };
 
-        // Perturbation magnitudes: 1° (degeneracy break), 5° and 10°
-        // (reach more distant solution basins, e.g. different J3 families).
-        static const double eps_list[] = {
-            1.0  * M_PI / 180.0,
-            5.0  * M_PI / 180.0,
-            10.0 * M_PI / 180.0,
-        };
-
-        for (double eps : eps_list) {
-            if (result.size() >= 16) break;
-
+        // Helper: run one perturbation magnitude (rotation only).
+        auto runRotPerturbations = [&](double eps) {
             double ce = std::cos(eps), se = std::sin(eps);
 
-            // ── Right-multiplication perturbations (local rotation of tool) ──
             double Rs[6][16] = {
                 { ce,-se, 0, 0,  se, ce, 0, 0,  0,  0, 1, 0,  0, 0, 0, 1 }, // Rz+
                 { ce, se, 0, 0, -se, ce, 0, 0,  0,  0, 1, 0,  0, 0, 0, 1 }, // Rz−
@@ -351,7 +345,6 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
                 { ce,  0,se, 0,   0,  1, 0, 0, -se,  0,ce, 0,  0, 0, 0, 1 }, // Ry+
                 { ce,  0,-se,0,   0,  1, 0, 0,  se,  0,ce, 0,  0, 0, 0, 1 }, // Ry−
             };
-
             for (auto& R : Rs) {
                 if (result.size() >= 16) break;
                 double perturbed[16];
@@ -359,9 +352,6 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
                 for (auto q : processRaw(perturbed)) tryWithFlips(q);
             }
 
-            // ── Left-rotation-only perturbations (world-frame orientation change,
-            //    position fixed).  Exposes solution basins missed by right-mult
-            //    (e.g. pure-Ry=90° degenerate poses). ──
             double Rls[6][9] = {
                 { ce,-se, 0,  se, ce, 0,  0, 0, 1 }, // Left-Rz+
                 { ce, se, 0, -se, ce, 0,  0, 0, 1 }, // Left-Rz−
@@ -370,10 +360,8 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
                 { ce,  0,se,   0,  1,  0,-se, 0,ce}, // Left-Ry+
                 { ce,  0,-se,  0,  1,  0, se, 0,ce}, // Left-Ry−
             };
-
             for (auto& Rl : Rls) {
                 if (result.size() >= 16) break;
-                // Perturb: replace 3×3 rotation block with Rl * R_orig, keep translation.
                 double perturbed[16];
                 for (int k = 0; k < 16; ++k) perturbed[k] = flat[k];
                 for (int i = 0; i < 3; ++i)
@@ -383,6 +371,35 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
                             perturbed[i*4+j] += Rl[i*3+k] * flat[k*4+j];
                     }
                 for (auto q : processRaw(perturbed)) tryWithFlips(q);
+            }
+        };
+
+        // ── Phase 1 (always): standard magnitudes 1°, 5°, 10° ────────────────
+        for (double eps : { 1.0 * M_PI/180.0, 5.0 * M_PI/180.0, 10.0 * M_PI/180.0 }) {
+            if (result.size() >= 16) break;
+            runRotPerturbations(eps);
+        }
+
+        // ── Phase 2 (last resort): joint-space Halton sampling ───────────────
+        // Independent of libhupf entirely.  Activated when Phase 1+2 still leave
+        // fewer than 4 solutions (e.g. robots where the HuPf polynomial returns
+        // zero real roots for all poses, such as the Doosan A0509).
+        // Halton sequence (bases 2,3,5,7,11,13) gives quasi-uniform coverage of
+        // the 6D joint-space box [lo, hi]^6.
+        if (result.size() < 4) {
+            auto halton = [](int idx, int base) -> double {
+                double f = 1.0, r = 0.0;
+                for (; idx > 0; idx /= base) { f /= base; r += f * (idx % base); }
+                return r;
+            };
+            static const int bases[6] = { 2, 3, 5, 7, 11, 13 };
+            for (int s = 1; s <= 300 && result.size() < 16; ++s) {
+                JointConfig q_seed;
+                for (int j = 0; j < 6; ++j)
+                    q_seed[j] = _limits.lo[j]
+                              + halton(s, bases[j])
+                              * (_limits.hi[j] - _limits.lo[j]);
+                tryWithFlips(q_seed);
             }
         }
     }
