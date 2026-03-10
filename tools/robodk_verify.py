@@ -6,9 +6,10 @@ IK solution to a live RoboDK session, and reports the Cartesian position
 deviation measured by RoboDK's forward kinematics.
 
 Usage:
-    python3 tools/robodk_verify.py [path/to/robot.yaml]
+    python3 tools/robodk_verify.py [path/to/robot.yaml] [robodk_robot_name]
 
-    Default robot file: robots/gofa12.yaml
+    Default robot file: robots/gofa5.yaml
+    Default RoboDK name: taken from the YAML (can differ from the scene name)
 
 Prerequisites:
     pip install robodk
@@ -69,14 +70,14 @@ def load_robot_yaml(path):
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
-YAML_FILE = sys.argv[1] if len(sys.argv) > 1 else "robots/gofa12.yaml"
+YAML_FILE = sys.argv[1] if len(sys.argv) > 1 else "robots/gofa5.yaml"
 robot_cfg = load_robot_yaml(YAML_FILE)
 
 ROBOT_LABEL  = robot_cfg['name']        # must match "-> <name>" header in demo output
-ROBOT_RDK    = robot_cfg['name']        # exact robot name in the RoboDK scene
+ROBOT_RDK    = sys.argv[2] if len(sys.argv) > 2 else robot_cfg['name']  # robot name in RoboDK scene
 JOINT_LIMITS = robot_cfg['limits']      # [(lo, hi), ...] in degrees
-INTERVAL     = 0.5                      # seconds between solutions
-DEMO_BIN     = 'build/demo'
+INTERVAL     = 2                      # seconds between solutions
+DEMO_BIN     = 'build/gofa5'
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 

@@ -98,4 +98,12 @@ inline Transform poseFromXYZRPW(double x_mm, double y_mm, double z_mm,
     return T;
 }
 
+// Sum of squared element-wise differences between two 4x4 transforms.
+inline double fkError(const Transform& A, const Transform& B)
+{
+    double e = 0;
+    for (int k = 0; k < 16; ++k) { double d = A[k] - B[k]; e += d*d; }
+    return e;
+}
+
 } // namespace IKDH

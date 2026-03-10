@@ -41,11 +41,15 @@ add_executable(demo examples/demo.cpp)
 target_include_directories(demo PRIVATE include)
 target_link_libraries(demo PRIVATE ikdh)
 
-add_executable(poly examples/poly.cpp)
+add_executable(gofa5 examples/gofa5.cpp)
+target_include_directories(gofa5 PRIVATE include)
+target_link_libraries(gofa5 PRIVATE ikdh)
+
+add_executable(poly tools/poly.cpp)
 target_include_directories(poly PRIVATE include)
 target_link_libraries(poly PRIVATE ikdh)
 
-add_executable(benchmark examples/benchmark.cpp)
+add_executable(benchmark tools/benchmark.cpp)
 target_include_directories(benchmark PRIVATE include)
 target_link_libraries(benchmark PRIVATE ikdh)
 
