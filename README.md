@@ -1,17 +1,42 @@
 # IKDH — Inverse Kinematics via Denavit-Hartenberg
 
-Closed-form IK solver for general 6-DOF serial robots, based on the algebraic
-method of Husty and Pfurner (Study-quadric / dual-quaternion formulation).
-Returns up to 8 solutions, all within specified joint limits.
+IK solver for general 6R serial robots, based on the algebraic
+method of Husty and Pfurner. Returns all the solutions for every geometry, within the joint limits. DH parameters and joint limits can be exported from RoboDK via the included Python script.
 
-## Build
+## Using IKDH as a library
 
 Requires CMake ≥ 3.14 and a C++11 compiler.
 
+```cmake
+include(FetchContent)
+FetchContent_Declare(ikdh
+    GIT_REPOSITORY https://github.com/Lab-CORO/IKDH.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(ikdh)
+
+target_link_libraries(your_target PRIVATE ikdh)
+```
+
+## Python bindings
+
+Build the Python module with:
+
 ```bash
-cmake -B build
-cmake --build build
-./build/demo
+cmake -B build -DIKDH_BUILD_PYTHON=ON
+cmake --build build --target ikdh_py
+```
+
+This produces `build/ikdh.cpython-<version>.so`, usable directly:
+
+```python
+import sys; sys.path.insert(0, 'build')
+import ikdh
+
+robot  = ikdh.load_robot("robots/gofa5.yaml")
+solver = ikdh.Solver(robot.dh, robot.limits)
+ee     = ikdh.pose_from_xyzrpw(500.0, 0.0, 500.0, 0.0, 90.0, 0.0)
+sols   = solver.solve(ee)   # list of numpy arrays of shape (6,), in degrees
 ```
 
 ## Adding a robot
@@ -52,7 +77,7 @@ Pre-defined robots are in `robots/`: `ur5e`, `gofa5`, `gofa12`, `crb15000_10`,
 
 ```cpp
 #include <ikdh.h>
-#include "robots.h"   // minimal YAML loader, no external deps
+#include <robots.h>   // minimal YAML loader, no external deps
 
 auto robot = Robots::loadRobot("robots/gofa5.yaml");
 IKDH::Solver solver(robot.dh, robot.limits);
@@ -61,7 +86,7 @@ IKDH::Solver solver(robot.dh, robot.limits);
 IKDH::Transform ee = IKDH::poseFromXYZRPW(500.0, 0.0, 500.0,  // x y z (mm)
                                             0.0,  90.0, 0.0);  // rx ry rz (deg)
 
-// Option B — from a known joint configuration
+// Option B — from a known joint configuration (degrees)
 IKDH::Transform ee = IKDH::forwardKin(robot.dh, {0, 45, 0, 0, 45, 0});
 
 auto sols = solver.solve(ee);
@@ -90,17 +115,30 @@ The robot name in the YAML must match the robot name in the RoboDK scene exactly
 ## Repository structure
 
 ```
-robots/           robot YAML files (DH + joint limits)
-include/ikdh.h    public API
-src/ikdh.cpp      solver (HuPf core + Newton post-processing)
-src/hupf/         HuPf algebraic IK (Husty–Pfurner)
+robots/                   robot YAML files (DH + joint limits)
+include/
+  ikdh.h                  public C++ API
+  robots.h                minimal YAML loader (no external deps)
+src/
+  ikdh.cpp                solver (HuPf core + Newton post-processing)
+  ikdh_bindings.cpp       Python bindings (pybind11)
+  hupf/                   HuPf algebraic IK (Husty-Pfurner)
 examples/
-  robots.h        minimal YAML loader (no external deps)
-  demo.cpp        round-trip IK demo
+  cpp/
+    gofa5_DH.cpp          minimal example: DH defined inline
+    gofa5_yaml.cpp        minimal example: DH loaded from YAML
+    demo.cpp              all robots round-trip demo
+  python/
+    gofa5_DH.py           same as gofa5_DH.cpp in Python
+    gofa5_yaml.py         same as gofa5_yaml.cpp in Python
+    demo.py               same as demo.cpp in Python
 tools/
-  robodk_dh.py    export robot DH from RoboDK → robots/*.yaml
-  robodk_verify.py stream solutions to RoboDK, report FK error
+  robodk_dh.py            export robot DH from RoboDK → robots/*.yaml
+  robodk_verify.py        stream solutions to RoboDK, report FK error
 ```
+
+> All executables must be run from the repository root so that paths like
+> `"robots/gofa5.yaml"` resolve correctly (e.g. `./build/demo`).
 
 ## Algorithm notes
 

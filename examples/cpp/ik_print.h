@@ -12,7 +12,7 @@ static void printIKResults(const Robots::Robot& robot, const IKDH::Transform& ee
     IKDH::Solver solver(robot.dh, robot.limits);
     auto sols = solver.solve(ee);
 
-    printf("%zu solution(s)\n", sols.size());
+    printf("%zu solution(s) found\n", sols.size());
     for (size_t i = 0; i < sols.size(); ++i) {
         IKDH::Transform check = IKDH::forwardKin(robot.dh, sols[i]);
         double err = IKDH::fkError(ee, check);
