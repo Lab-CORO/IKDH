@@ -27,6 +27,25 @@ static bool wrapAngle(double angle, double lo, double hi, double& out)
     return false;
 }
 
+// Return all representations of angle (degrees) that lie in [lo, hi],
+// i.e. all values of the form (angle mod 360°) + k*360° within the range.
+static std::vector<double> allWraps(double angle, double lo, double hi)
+{
+    // Normalise to (-180, 180]
+    angle = std::fmod(angle, 360.0);
+    if (angle >  180.0) angle -= 360.0;
+    if (angle <= -180.0) angle += 360.0;
+
+    std::vector<double> result;
+    int k_min = static_cast<int>(std::floor((lo - angle) / 360.0));
+    int k_max = static_cast<int>(std::ceil ((hi - angle) / 360.0));
+    for (int k = k_min; k <= k_max; ++k) {
+        double a = angle + k * 360.0;
+        if (a >= lo && a <= hi) result.push_back(a);
+    }
+    return result;
+}
+
 // Multiply two homogeneous transforms where both have last row [0,0,0,1].
 // Exploits the fixed last row to skip 28 multiplications vs. the general 4×4 case.
 static void mul4(const double A[16], const double B[16], double C[16])
@@ -88,7 +107,8 @@ static bool solveLinear6(double A[6][6], double b[6], double x[6])
 //
 // Damped least-squares (Tikhonov) step keeps wrist singularities stable.
 // Returns true when the Frobenius FK error drops below tol.
-static bool refineIK(const DHTable& dh, JointConfig& q, const Transform& T_target,
+static bool refineIK(const DHTable& dh, const JointLimits& limits,
+                     JointConfig& q, const Transform& T_target,
                      int maxIter = 40, double tol = 1e-9)
 {
     const double lambda = 1e-6;  // Tikhonov damping
@@ -199,13 +219,21 @@ static bool refineIK(const DHTable& dh, JointConfig& q, const Transform& T_targe
 
         for (int j = 0; j < 6; ++j) {
             q[j] += dq_rad[j] * (180.0 / M_PI);
-            // Normalise revolute joints to (-180, 180] after each step.
-            // This prevents "winding" (accumulating thousands of degrees) when
-            // the starting configuration is far from the target in joint space.
+            // Normalise revolute joints to the joint's actual limit range after
+            // each step.  This prevents "winding" (accumulating thousands of
+            // degrees) while respecting limits wider than ±180° (e.g. J3 ∈
+            // [-225, 85]).  Fall back to (-180, 180] if the angle cannot be
+            // mapped into the limit range (will be filtered later).
             if (dh.revolute[j]) {
-                q[j] = std::fmod(q[j], 360.0);
-                if (q[j] >  180.0) q[j] -= 360.0;
-                if (q[j] <= -180.0) q[j] += 360.0;
+                double wrapped;
+                if (wrapAngle(q[j], limits.lo[j], limits.hi[j], wrapped))
+                    q[j] = wrapped;
+                else {
+                    // Fallback: keep in (-180, 180] to avoid winding.
+                    q[j] = std::fmod(q[j], 360.0);
+                    if (q[j] >  180.0) q[j] -= 360.0;
+                    if (q[j] <= -180.0) q[j] += 360.0;
+                }
             }
         }
     }
@@ -235,7 +263,7 @@ Solver::~Solver()
     delete static_cast<LibHUPF::ik_solver*>(_impl);
 }
 
-std::vector<JointConfig> Solver::solve(const Transform& ee) const
+std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) const
 {
     auto* iks = static_cast<LibHUPF::ik_solver*>(_impl);
     const double rad2deg = 180.0 / M_PI;
@@ -281,7 +309,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
         std::vector<JointConfig> refined;
         refined.reserve(result.size());
         for (auto q : result) {
-            refineIK(_dh, q, ee, 40);
+            refineIK(_dh, _limits, q, ee, 40);
             JointConfig qw;
             bool valid = true;
             for (int i = 0; i < 6; ++i)
@@ -310,7 +338,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
     // Stop early once we reach that count.
     {
         auto tryRefineAndAdd = [&](JointConfig q) {
-            if (!refineIK(_dh, q, ee, 100)) return;
+            if (!refineIK(_dh, _limits, q, ee, 100)) return;
             JointConfig qw;
             bool valid = true;
             for (int i = 0; i < 6; ++i) {
@@ -422,7 +450,58 @@ std::vector<JointConfig> Solver::solve(const Transform& ee) const
         }
     }
 
+    // ── Wrap expansion (optional) ─────────────────────────────────────────────
+    // For each solution, generate all equivalent representations obtained by
+    // shifting individual joints by ±k*360° while staying within limits.
+    // Useful for motion planners that treat angle + 360° as a distinct waypoint.
+    // The original solutions are always included; replicas are appended.
+    if (expand_wraps) {
+        const std::size_t n_base = result.size();
+        for (std::size_t s = 0; s < n_base; ++s) {
+            const JointConfig& base = result[s];
+
+            // Collect all valid wraps per joint.
+            std::array<std::vector<double>, 6> wraps;
+            int total = 1;
+            for (int j = 0; j < 6; ++j) {
+                wraps[j] = allWraps(base[j], _limits.lo[j], _limits.hi[j]);
+                total *= static_cast<int>(wraps[j].size());
+            }
+
+            // Enumerate all combinations (skip the one that equals base).
+            for (int idx = 0; idx < total; ++idx) {
+                JointConfig q;
+                int tmp = idx;
+                for (int j = 0; j < 6; ++j) {
+                    int sz = static_cast<int>(wraps[j].size());
+                    q[j] = wraps[j][tmp % sz];
+                    tmp /= sz;
+                }
+                // Skip if identical to the base solution.
+                bool same = true;
+                for (int j = 0; j < 6; ++j)
+                    if (q[j] != base[j]) { same = false; break; }
+                if (same) continue;
+                result.push_back(q);
+            }
+        }
+    }
+
     return result;
+}
+
+std::vector<JointConfig> Solver::solveFromSeed(const Transform& ee,
+                                                const JointConfig& seed,
+                                                int max_iter) const
+{
+    JointConfig q = seed;
+    if (!refineIK(_dh, _limits, q, ee, max_iter))
+        return {};
+    JointConfig qw;
+    for (int i = 0; i < 6; ++i)
+        if (!wrapAngle(q[i], _limits.lo[i], _limits.hi[i], qw[i]))
+            return {};
+    return { qw };
 }
 
 std::vector<double> Solver::lastPolynomial() const

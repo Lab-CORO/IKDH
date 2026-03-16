@@ -8,7 +8,7 @@
 namespace py = pybind11;
 using namespace IKDH;
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 static Transform numpy_to_transform(py::array_t<double, py::array::c_style | py::array::forcecast> arr)
 {
@@ -28,13 +28,13 @@ static py::array_t<double> transform_to_numpy(const Transform& t)
     return arr;
 }
 
-// ── Module ─────────────────────────────────────────────────────────────────────
+// ── Module ────────────────────────────────────────────────────────────────────
 
 PYBIND11_MODULE(ikdh, m)
 {
     m.doc() = "IKDH — Inverse kinematics for 6R serial robots (HuPf algebraic method)";
 
-    // ── DHTable ──────────────────────────────────────────────────────────────
+    // ── DHTable ───────────────────────────────────────────────────────────────
     py::class_<DHTable>(m, "DHTable")
         .def(py::init<>())
         .def(py::init([](std::vector<double> a, std::vector<double> d,
@@ -43,10 +43,10 @@ PYBIND11_MODULE(ikdh, m)
                 throw std::runtime_error("All DH arrays must have exactly 6 elements");
             DHTable dh{};
             for (int i = 0; i < 6; ++i) {
-                dh.a[i]       = a[i];
-                dh.d[i]       = d[i];
-                dh.alpha[i]   = alpha[i];
-                dh.theta[i]   = theta[i];
+                dh.a[i]        = a[i];
+                dh.d[i]        = d[i];
+                dh.alpha[i]    = alpha[i];
+                dh.theta[i]    = theta[i];
                 dh.revolute[i] = true;
             }
             return dh;
@@ -72,17 +72,16 @@ PYBIND11_MODULE(ikdh, m)
             return std::string(buf);
         });
 
-    // ── JointLimits ──────────────────────────────────────────────────────────
+    // ── JointLimits ───────────────────────────────────────────────────────────
     py::class_<JointLimits>(m, "JointLimits")
-        .def(py::init<>(), "Default: ±180° for all joints")
+        .def(py::init<>(), "Default: ±180° for all joints.")
         .def(py::init([](std::vector<std::pair<double,double>> pairs) {
             if (pairs.size() != 6)
                 throw std::runtime_error("Expected exactly 6 (lo, hi) pairs");
             JointLimits jl;
             for (int i = 0; i < 6; ++i) { jl.lo[i] = pairs[i].first; jl.hi[i] = pairs[i].second; }
             return jl;
-        }), py::arg("limits"),
-            "List of 6 (lo, hi) tuples in degrees.")
+        }), py::arg("limits"), "List of 6 (lo, hi) tuples in degrees.")
         .def_property("lo",
             [](const JointLimits& jl) { return std::vector<double>(jl.lo, jl.lo + 6); },
             [](JointLimits& jl, std::vector<double> v) { for (int i=0;i<6;++i) jl.lo[i]=v[i]; })
@@ -90,15 +89,16 @@ PYBIND11_MODULE(ikdh, m)
             [](const JointLimits& jl) { return std::vector<double>(jl.hi, jl.hi + 6); },
             [](JointLimits& jl, std::vector<double> v) { for (int i=0;i<6;++i) jl.hi[i]=v[i]; });
 
-    // ── Solver ───────────────────────────────────────────────────────────────
+    // ── Solver ────────────────────────────────────────────────────────────────
     py::class_<Solver>(m, "Solver")
         .def(py::init<const DHTable&, const JointLimits&>(),
              py::arg("dh"), py::arg("limits") = JointLimits{},
-             "Construct once per robot, then call solve() for each pose.")
+             "Construct once per robot.")
         .def("solve",
-            [](const Solver& solver, py::array_t<double, py::array::c_style | py::array::forcecast> ee) {
-                auto sols = solver.solve(numpy_to_transform(ee));
-                // Return list of numpy arrays shape (6,)
+            [](const Solver& solver,
+               py::array_t<double, py::array::c_style | py::array::forcecast> ee,
+               bool expand_wraps) {
+                auto sols = solver.solve(numpy_to_transform(ee), expand_wraps);
                 py::list result;
                 for (const auto& q : sols) {
                     auto arr = py::array_t<double>(6);
@@ -108,9 +108,34 @@ PYBIND11_MODULE(ikdh, m)
                 }
                 return result;
             },
-            py::arg("ee"),
-            "Solve IK for a 4x4 end-effector transform (numpy array).\n"
-            "Returns a list of numpy arrays of shape (6,), one per solution, in degrees.");
+            py::arg("ee"), py::arg("expand_wraps") = false,
+            "Return all IK solutions for a 4x4 end-effector transform (numpy array).\n"
+            "Each solution is a (6,) array in degrees. If expand_wraps=True, also\n"
+            "includes ±360° equivalents within joint limits.")
+        .def("solve_from_seed",
+            [](const Solver& solver,
+               py::array_t<double, py::array::c_style | py::array::forcecast> ee,
+               py::array_t<double, py::array::c_style | py::array::forcecast> seed,
+               int max_iter) {
+                if (seed.size() != 6)
+                    throw std::runtime_error("seed must have exactly 6 elements");
+                JointConfig jc;
+                const double* s = seed.data();
+                for (int i = 0; i < 6; ++i) jc[i] = s[i];
+                auto sols = solver.solveFromSeed(numpy_to_transform(ee), jc, max_iter);
+                py::list result;
+                for (const auto& q : sols) {
+                    auto arr = py::array_t<double>(6);
+                    double* data = arr.mutable_data();
+                    for (int i = 0; i < 6; ++i) data[i] = q[i];
+                    result.append(arr);
+                }
+                return result;
+            },
+            py::arg("ee"), py::arg("seed"), py::arg("max_iter") = 100,
+            "Warm-start IK via damped Newton-Raphson from seed (degrees, shape (6,)).\n"
+            "Returns a list with one (6,) solution if Newton converges within limits,\n"
+            "otherwise an empty list. ~100x faster than solve() — use for path planning.");
 
     // ── Free functions ────────────────────────────────────────────────────────
     m.def("forward_kin",
@@ -123,7 +148,7 @@ PYBIND11_MODULE(ikdh, m)
             return transform_to_numpy(forwardKin(dh, jc));
         },
         py::arg("dh"), py::arg("q"),
-        "Forward kinematics. q in degrees. Returns 4x4 numpy array.");
+        "Forward kinematics. q in degrees. Returns a (4, 4) numpy array.");
 
     m.def("pose_from_xyzrpw",
         [](double x_mm, double y_mm, double z_mm,
@@ -132,7 +157,7 @@ PYBIND11_MODULE(ikdh, m)
         },
         py::arg("x_mm"), py::arg("y_mm"), py::arg("z_mm"),
         py::arg("rx_deg"), py::arg("ry_deg"), py::arg("rz_deg"),
-        "Build a 4x4 transform from a RoboDK-style pose (mm, degrees, Rz*Ry*Rx).");
+        "Build a (4, 4) transform from a RoboDK pose (mm, degrees, Rz·Ry·Rx).");
 
     m.def("fk_error",
         [](py::array_t<double, py::array::c_style | py::array::forcecast> A,
@@ -140,7 +165,7 @@ PYBIND11_MODULE(ikdh, m)
             return fkError(numpy_to_transform(A), numpy_to_transform(B));
         },
         py::arg("A"), py::arg("B"),
-        "Sum of squared element-wise differences between two 4x4 transforms.");
+        "Σ(A_ij − B_ij)² over all 16 elements of two 4×4 transforms.");
 
     // ── Robot loader ──────────────────────────────────────────────────────────
     py::class_<Robots::Robot>(m, "Robot")
@@ -149,6 +174,5 @@ PYBIND11_MODULE(ikdh, m)
         .def_readonly("limits", &Robots::Robot::limits);
 
     m.def("load_robot", &Robots::loadRobot, py::arg("yaml_path"),
-          "Load a robot from a YAML file (robots/*.yaml).\n"
-          "Returns a Robot object with .name, .dh, and .limits attributes.");
+          "Load a robot from a YAML file. Returns a Robot with .name, .dh, .limits.");
 }
