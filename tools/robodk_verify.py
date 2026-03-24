@@ -77,7 +77,7 @@ ROBOT_LABEL  = robot_cfg['name']        # must match "-> <name>" header in demo 
 ROBOT_RDK    = sys.argv[2] if len(sys.argv) > 2 else robot_cfg['name']  # robot name in RoboDK scene
 JOINT_LIMITS = robot_cfg['limits']      # [(lo, hi), ...] in degrees
 INTERVAL     = 2                      # seconds between solutions
-DEMO_BIN     = 'build/gofa5'
+DEMO_BIN     = sys.argv[3] if len(sys.argv) > 3 else 'build/demo'
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
