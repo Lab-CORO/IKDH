@@ -16,6 +16,7 @@
 
 #if defined(JDEBUG)
 #include <iostream>
+#include <stdexcept>
 #endif
 
 namespace LibHUPF
@@ -722,8 +723,7 @@ public:
 
       if (iterations == 60)
       {
-        perror("Maximum no. of iterations reached");
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("Maximum no. of iterations reached in QR eigenvalue solver");
       }
 
       if (iterations % 10 == 0 && iterations > 0)
