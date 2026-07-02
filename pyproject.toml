@@ -1,0 +1,29 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "ikdh"
+version = "1.0.0"
+description = "Inverse kinematics for general 6R serial robots (Husty-Pfurner algebraic method)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [{ name = "Axel Refalo", email = "axel.refalo@gmail.com" }]
+dependencies = ["numpy"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Homepage = "https://github.com/Lab-CORO/IKDH"
+Repository = "https://github.com/Lab-CORO/IKDH"
+
+[tool.scikit-build]
+cmake.args = ["-DIKDH_BUILD_PYTHON=ON"]
+build.targets = ["ikdh_py"]
+wheel.license-files = ["LICENSE"]

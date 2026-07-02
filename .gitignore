@@ -4,6 +4,8 @@
 /vs2008/libhupf_mine.vcproj
 __pycache__/
 build/
+dist/
+*.egg-info/
 *.robot
 *.pkl
 .DS_Store

@@ -85,11 +85,16 @@ if(IKDH_BUILD_PYTHON)
     target_include_directories(ikdh_py PRIVATE include)
     target_link_libraries(ikdh_py PRIVATE ikdh)
     set_target_properties(ikdh_py PROPERTIES OUTPUT_NAME ikdh)
+
+    # Installed by `pip install .` (see pyproject.toml) directly into site-packages root.
+    install(TARGETS ikdh_py DESTINATION .)
 endif()
 
 # ── Install rules ─────────────────────────────────────────────────────────────
-# Only add install rules when this is the top-level project (not a subdirectory).
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+# Only add install rules when this is the top-level project (not a subdirectory),
+# and not when building the Python wheel (SKBUILD, set by scikit-build-core) —
+# the wheel should contain only the compiled extension, not C++ dev artifacts.
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT SKBUILD)
 
     # Install libraries
     install(TARGETS ikdh hupf

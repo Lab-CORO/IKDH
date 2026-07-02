@@ -5,6 +5,7 @@ IKDH is an **Inverse Kinematics** solver based on the **Denavit and Hartenberg**
 ---
 
 ## Web Interface
+
 Web Interface can be accessed [here](https://lab-coro.github.io/IKDH/web/index.html).
 
 | <img src="img/joints.png" title="" alt="joints" width="236"> | <img title="" src="img/frames.png" alt="frames" width="242"> | <img src="img/manipulability.png" title="" alt="manipulability" width="236"> |
@@ -26,7 +27,13 @@ Robots can be browsed and downloaded from the [RoboDK Robot Library](https://rob
 
 ## Library
 
-build the project
+Install the python
+
+```bash
+pip install ikdh
+```
+
+Or locally build the project
 
 ```bash
 cmake -B build -S .
@@ -36,7 +43,6 @@ cmake --build build
 ### Python example
 
 ```python
-import sys; sys.path.insert(0, 'build')
 import ikdh
 
 robot  = ikdh.load_robot("robots/your_robot.yaml")
