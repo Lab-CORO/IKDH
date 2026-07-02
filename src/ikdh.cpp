@@ -46,6 +46,32 @@ static std::vector<double> allWraps(double angle, double lo, double hi)
     return result;
 }
 
+// Wrap every joint of q into limits via wrapAngle(). Returns false (and leaves
+// out partially written) if any joint cannot be mapped into its limit range.
+static bool wrapAll(const JointConfig& q, const JointLimits& limits, JointConfig& out)
+{
+    for (int i = 0; i < 6; ++i)
+        if (!wrapAngle(q[i], limits.lo[i], limits.hi[i], out[i])) return false;
+    return true;
+}
+
+// True if qw is within ~1° (squared angular distance < 1.0) of any solution
+// already in result. Used to collapse near-duplicate branches found from
+// different seeds/flips onto a single representative solution.
+static bool isDuplicate(const std::vector<JointConfig>& result, const JointConfig& qw)
+{
+    for (const auto& r : result) {
+        double d2 = 0;
+        for (int i = 0; i < 6; ++i) {
+            double dd = std::fmod(std::fabs(r[i] - qw[i]), 360.0);
+            if (dd > 180.0) dd = 360.0 - dd;
+            d2 += dd * dd;
+        }
+        if (d2 < 1.0) return true;
+    }
+    return false;
+}
+
 // Multiply two homogeneous transforms where both have last row [0,0,0,1].
 // Exploits the fixed last row to skip 28 multiplications vs. the general 4×4 case.
 static void mul4(const double A[16], const double B[16], double C[16])
@@ -268,186 +294,83 @@ std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) c
     auto* iks = static_cast<LibHUPF::ik_solver*>(_impl);
     const double rad2deg = 180.0 / M_PI;
 
-    // Solve IK for a flat 4×4 matrix, subtract theta offsets, wrap, filter limits.
-    auto processRaw = [&](double* mat) {
-        auto raw = iks->solve(mat);
-        std::vector<JointConfig> res;
-        res.reserve(raw.size());
-        for (const auto& sol : raw) {
+    double flat[16];
+    for (int i = 0; i < 16; ++i) flat[i] = ee[i];
+
+    // ── Algebraic solve ───────────────────────────────────────────────────────
+    auto raw = iks->solve(flat);
+    LibHUPF::primary_poly_ref() = LibHUPF::poly_capture_ref();
+
+    // ── Build unified seed pool ───────────────────────────────────────────────
+    // Seeds come from two sources, all fed into a single Newton pass:
+    //   1. Primary algebraic roots + 8 J1/J4/J6 flip variants each
+    //   2. Halton quasi-random seeds covering the joint-space cube
+    std::vector<JointConfig> seeds;
+
+    // Convert a raw solver result to seeds: normalize + 8 flip combos.
+    auto addAsSeeds = [&](const decltype(raw)& sols) {
+        for (const auto& sol : sols) {
             JointConfig q;
             bool valid = true;
             for (int i = 0; i < 6; ++i) {
-                // libhupf returns total DH angles (offset + user); subtract offset.
                 double angle = sol[i] - _theta_off[i] * rad2deg;
-                if (!wrapAngle(angle, _limits.lo[i], _limits.hi[i], q[i])) {
-                    valid = false; break;
-                }
+                if (!wrapAngle(angle, _limits.lo[i], _limits.hi[i], q[i])) { valid = false; break; }
             }
-            if (valid) res.push_back(q);
-        }
-        return res;
-    };
-
-    double flat[16];
-    for (int i = 0; i < 16; ++i) flat[i] = ee[i];
-    auto result = processRaw(flat);
-
-    // Snapshot the resultant polynomial from the primary solve before the
-    // fallback overwrites poly_capture_ref() with perturbed-pose polynomials.
-    LibHUPF::primary_poly_ref() = LibHUPF::poly_capture_ref();
-
-    // Post-refine primary HuPf solutions.  Near degenerate poses the algebraic
-    // roots can have poor precision (FK error ~1e-5 to 1e-7).  A few Newton
-    // iterations bring them to < 1e-9 with negligible extra cost.
-    //
-    // After Newton, angles are normalised to (-180, 180] by the per-step
-    // wrap inside refineIK.  For joints whose limit range extends below -180°
-    // (e.g. J3 ∈ [-225, 85]) this can flip a valid -203° into +157°, which
-    // is outside the limit.  Re-wrap to fix the representation; drop any
-    // solution that genuinely cannot be mapped into limits.
-    {
-        std::vector<JointConfig> refined;
-        refined.reserve(result.size());
-        for (auto q : result) {
-            refineIK(_dh, _limits, q, ee, 40);
-            JointConfig qw;
-            bool valid = true;
-            for (int i = 0; i < 6; ++i)
-                if (!wrapAngle(q[i], _limits.lo[i], _limits.hi[i], qw[i]))
-                    { valid = false; break; }
-            if (valid) refined.push_back(qw);
-        }
-        result = std::move(refined);
-    }
-
-    // ── Degeneracy / infinity fallback ────────────────────────────────────────
-    // The HuPf solver uses the right-chain substitution u4 = 1/v4 where
-    // v4 = tan(θ4/2).  This means:
-    //   • J4 = ±180°  →  v4 = ±∞  →  u4 = 0   →  found by the polynomial
-    //   • J4 =   0°   →  v4 =  0  →  u4 = ∞   →  NOT found (root at infinity)
-    // Additionally, rank-deficient KinematicSurface matrices (e.g. pure-Ry
-    // poses on a robot with α₅=0) further reduce the number of roots found.
-    //
-    // Strategy: right-multiply the target by small rotation perturbations to
-    // break both issues, solve the non-degenerate perturbed problem, then
-    // refine each new candidate back onto the original target via damped
-    // Newton-Raphson.  Six independent directions × three magnitudes give good
-    // coverage of all solution basins.
-    //
-    // We target up to 16 solutions (theoretical algebraic maximum for a 6R robot).
-    // Stop early once we reach that count.
-    {
-        auto tryRefineAndAdd = [&](JointConfig q) {
-            if (!refineIK(_dh, _limits, q, ee, 100)) return;
-            JointConfig qw;
-            bool valid = true;
-            for (int i = 0; i < 6; ++i) {
-                if (!wrapAngle(q[i], _limits.lo[i], _limits.hi[i], qw[i])) {
-                    valid = false; break;
-                }
-            }
-            if (!valid) return;
-            // Deduplication via circular distance (mod 360°).
-            // Threshold: sum-of-squares < 1 deg² (≈ 0.4° RMS per joint).
-            for (const auto& r : result) {
-                double d2 = 0;
-                for (int i = 0; i < 6; ++i) {
-                    double dd = std::fmod(std::fabs(r[i] - qw[i]), 360.0);
-                    if (dd > 180.0) dd = 360.0 - dd;
-                    d2 += dd * dd;
-                }
-                if (d2 < 1.0) return;
-            }
-            result.push_back(qw);
-        };
-
-        // Try a seed and its shoulder/wrist flip variants.
-        // Flipping J1 by ±180° (shoulder flip), J4 by ±180° (wrist flip), or
-        // J6 by ±180° (tool flip) jumps to solution basins unreachable by Newton
-        // alone.  All 8 combinations of the three binary flips are tried.
-        auto tryWithFlips = [&](JointConfig q) {
+            if (!valid) continue;
             for (int mask = 0; mask < 8; ++mask) {
                 JointConfig qf = q;
-                if (mask & 1) qf[0] += 180.0;  // J1 flip
-                if (mask & 2) qf[3] += 180.0;  // J4 flip
-                if (mask & 4) qf[5] += 180.0;  // J6 flip
-                tryRefineAndAdd(qf);
-            }
-        };
-
-        // Helper: run one perturbation magnitude (rotation only).
-        auto runRotPerturbations = [&](double eps) {
-            double ce = std::cos(eps), se = std::sin(eps);
-
-            double Rs[6][16] = {
-                { ce,-se, 0, 0,  se, ce, 0, 0,  0,  0, 1, 0,  0, 0, 0, 1 }, // Rz+
-                { ce, se, 0, 0, -se, ce, 0, 0,  0,  0, 1, 0,  0, 0, 0, 1 }, // Rz−
-                {  1,  0, 0, 0,   0, ce,-se, 0,  0, se,ce, 0,  0, 0, 0, 1 }, // Rx+
-                {  1,  0, 0, 0,   0, ce, se, 0,  0,-se,ce, 0,  0, 0, 0, 1 }, // Rx−
-                { ce,  0,se, 0,   0,  1, 0, 0, -se,  0,ce, 0,  0, 0, 0, 1 }, // Ry+
-                { ce,  0,-se,0,   0,  1, 0, 0,  se,  0,ce, 0,  0, 0, 0, 1 }, // Ry−
-            };
-            for (auto& R : Rs) {
-                if (result.size() >= 16) break;
-                double perturbed[16];
-                mul4(flat, R, perturbed);
-                for (auto q : processRaw(perturbed)) tryWithFlips(q);
-            }
-
-            double Rls[6][9] = {
-                { ce,-se, 0,  se, ce, 0,  0, 0, 1 }, // Left-Rz+
-                { ce, se, 0, -se, ce, 0,  0, 0, 1 }, // Left-Rz−
-                {  1,  0, 0,   0, ce,-se, 0,se,ce }, // Left-Rx+
-                {  1,  0, 0,   0, ce, se, 0,-se,ce}, // Left-Rx−
-                { ce,  0,se,   0,  1,  0,-se, 0,ce}, // Left-Ry+
-                { ce,  0,-se,  0,  1,  0, se, 0,ce}, // Left-Ry−
-            };
-            for (auto& Rl : Rls) {
-                if (result.size() >= 16) break;
-                double perturbed[16];
-                for (int k = 0; k < 16; ++k) perturbed[k] = flat[k];
-                for (int i = 0; i < 3; ++i)
-                    for (int j = 0; j < 3; ++j) {
-                        perturbed[i*4+j] = 0;
-                        for (int k = 0; k < 3; ++k)
-                            perturbed[i*4+j] += Rl[i*3+k] * flat[k*4+j];
-                    }
-                for (auto q : processRaw(perturbed)) tryWithFlips(q);
-            }
-        };
-
-        // ── Phase 1 (always): standard magnitudes 1°, 5°, 10° ────────────────
-        // Adaptive early exit: if a magnitude adds no new solutions, subsequent
-        // magnitudes won't either (any ε > 0 breaks algebraic degeneracy equally).
-        for (double eps : { 1.0 * M_PI/180.0, 5.0 * M_PI/180.0, 10.0 * M_PI/180.0 }) {
-            if (result.size() >= 16) break;
-            const std::size_t before = result.size();
-            runRotPerturbations(eps);
-            if (result.size() == before) break;  // no progress → skip remaining magnitudes
-        }
-
-        // ── Phase 2 (last resort): joint-space Halton sampling ───────────────
-        // Independent of libhupf entirely.  Activated when Phase 1+2 still leave
-        // fewer than 4 solutions (e.g. robots where the HuPf polynomial returns
-        // zero real roots for all poses, such as the Doosan A0509).
-        // Halton sequence (bases 2,3,5,7,11,13) gives quasi-uniform coverage of
-        // the 6D joint-space box [lo, hi]^6.
-        if (result.size() < 4) {
-            auto halton = [](int idx, int base) -> double {
-                double f = 1.0, r = 0.0;
-                for (; idx > 0; idx /= base) { f /= base; r += f * (idx % base); }
-                return r;
-            };
-            static const int bases[6] = { 2, 3, 5, 7, 11, 13 };
-            for (int s = 1; s <= 100 && result.size() < 16; ++s) {
-                JointConfig q_seed;
-                for (int j = 0; j < 6; ++j)
-                    q_seed[j] = _limits.lo[j]
-                              + halton(s, bases[j])
-                              * (_limits.hi[j] - _limits.lo[j]);
-                tryWithFlips(q_seed);
+                if (mask & 1) qf[0] += 180.0;
+                if (mask & 2) qf[3] += 180.0;
+                if (mask & 4) qf[5] += 180.0;
+                seeds.push_back(qf);
             }
         }
+    };
+
+    addAsSeeds(raw);
+
+    // Halton seeds covering [lo, hi]^6.
+    auto halton = [](int idx, int base) -> double {
+        double f = 1.0, r = 0.0;
+        for (; idx > 0; idx /= base) { f /= base; r += f * (idx % base); }
+        return r;
+    };
+    static const int bases[6] = { 2, 3, 5, 7, 11, 13 };
+    for (int s = 1; s <= 32; ++s) {
+        JointConfig q;
+        for (int j = 0; j < 6; ++j)
+            q[j] = _limits.lo[j] + halton(s, bases[j]) * (_limits.hi[j] - _limits.lo[j]);
+        seeds.push_back(q);
+    }
+
+    // ── Single Newton pass over all seeds ─────────────────────────────────────
+    std::vector<JointConfig> result;
+    for (auto q : seeds) {
+        if (result.size() >= 16) break;
+        if (!refineIK(_dh, _limits, q, ee, 50)) continue;
+        JointConfig qw;
+        if (!wrapAll(q, _limits, qw)) continue;
+        if (!isDuplicate(result, qw)) result.push_back(qw);
+    }
+
+    // ── Flip expansion on found solutions ─────────────────────────────────────
+    // A second cheap pass: flip each found solution by +180° on every joint and
+    // re-run Newton.  Catches solution branches adjacent in configuration space
+    // to the ones already found, at negligible extra cost.
+    {
+        auto tryAdd = [&](JointConfig q) {
+            if (result.size() >= 16) return;
+            if (!refineIK(_dh, _limits, q, ee, 50)) return;
+            JointConfig qw;
+            if (!wrapAll(q, _limits, qw)) return;
+            if (!isDuplicate(result, qw)) result.push_back(qw);
+        };
+        const std::size_t n_found = result.size();
+        for (std::size_t s = 0; s < n_found && result.size() < 16; ++s)
+            for (int j = 0; j < 6; ++j) {
+                JointConfig qf = result[s]; qf[j] += 180.0;
+                tryAdd(qf);
+            }
     }
 
     // ── Wrap expansion (optional) ─────────────────────────────────────────────
@@ -498,9 +421,8 @@ std::vector<JointConfig> Solver::solveFromSeed(const Transform& ee,
     if (!refineIK(_dh, _limits, q, ee, max_iter))
         return {};
     JointConfig qw;
-    for (int i = 0; i < 6; ++i)
-        if (!wrapAngle(q[i], _limits.lo[i], _limits.hi[i], qw[i]))
-            return {};
+    if (!wrapAll(q, _limits, qw))
+        return {};
     return { qw };
 }
 

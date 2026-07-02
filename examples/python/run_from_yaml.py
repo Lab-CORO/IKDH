@@ -1,5 +1,11 @@
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'build'))
+"""
+run_from_yaml.py — Minimal example: load a robot from YAML and solve IK.
+
+Usage (from the repository root):
+    python3 examples/python/run_from_yaml.py
+"""
+
+from _common import print_solutions
 import ikdh
 
 # ── Load robot from YAML ──────────────────────────────────────────────────────
@@ -14,9 +20,4 @@ poses = [
 ]
 
 for ee in poses:
-    sols = solver.solve(ee)
-    print(f"{len(sols)} solution(s) found")
-    for i, q in enumerate(sols):
-        err = ikdh.fk_error(ee, ikdh.forward_kin(robot.dh, q))
-        print(f"  [{i:2d}]  {' '.join(f'{v:7.3f}' for v in q)}   FK err = {err:.1e}")
-    print()
+    print_solutions(solver, robot.dh, ee)

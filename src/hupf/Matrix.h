@@ -13,10 +13,11 @@
 #endif
 #include "Polynomial.h"
 #include "Complex.h"
+#include <complex>
+#include <stdexcept>
 
 #if defined(JDEBUG)
 #include <iostream>
-#include <stdexcept>
 #endif
 
 namespace LibHUPF
@@ -541,6 +542,179 @@ public:
     }
     return res;
   };
+
+  /**
+   * Polynomial long division: returns Q such that A = Q * B + remainder.
+   * Returns a degree-(-1) polynomial when the remainder exceeds 0.1% of the
+   * dividend's scale, signalling that B is not an exact algebraic factor of A.
+   * Both polynomials must have realCoeffType == true.
+   */
+  static Polynomial polyLongDiv(const Polynomial &A, const Polynomial &B)
+  {
+    if (!A.realCoeffType || !B.realCoeffType) return Polynomial();
+    if (B.degree <= 0 || A.degree < B.degree)   return Polynomial();
+
+    int qDeg = A.degree - B.degree;
+    Polynomial Q(qDeg);
+
+    std::vector<double> rem(A.coefficient.begin(), A.coefficient.end());
+    double bLead = B.coefficient[B.degree];
+    if (std::fabs(bLead) < 1e-300) return Polynomial();
+
+    for (int i = qDeg; i >= 0; i--) {
+      double c = rem[i + B.degree] / bLead;
+      Q.coefficient[i] = c;
+      for (int j = 0; j <= B.degree; j++)
+        rem[i + j] -= c * B.coefficient[j];
+    }
+
+    // Accept the division only when the remainder is negligible.
+    double scaleA = 0.0;
+    for (int i = 0; i <= A.degree; i++)
+      scaleA = std::max(scaleA, std::fabs(A.coefficient[i]));
+
+    double scaleR = 0.0;
+    for (int i = 0; i < B.degree; i++)
+      scaleR = std::max(scaleR, std::fabs(rem[i]));
+
+    if (scaleA > 0.0 && scaleR > 1e-3 * scaleA)
+      return Polynomial();  // remainder too large: B is not an exact factor of A
+
+    return Q;
+  };
+
+  /**
+   * Aberth-Ehrlich simultaneous root finder for a univariate polynomial with
+   * real coefficients.  Converges cubically, O(n^2 * iter) vs O(n^3 * iter)
+   * for the QR companion approach on a degree-56 polynomial.
+   *
+   * Falls back to qrCompanion if Aberth residuals do not converge below 1e-10
+   * after the iteration budget.
+   *
+   * @param p  Polynomial with realCoeffType == true
+   * @return   All n roots (real and complex pairs)
+   */
+  static std::vector<Complex> aberthRoots(const Polynomial &p)
+  {
+    using cplx = std::complex<double>;
+    int n = p.degree;
+    if (n <= 0) {
+      return {};
+    }
+    if (n == 1) {
+      Complex r;
+      r.real = (p.coefficient[0] != 0.0) ? -p.coefficient[0] / p.coefficient[1] : 0.0;
+      r.imaginary = 0.0;
+      return {r};
+    }
+
+    const double lead = p.coefficient[n];
+
+    // Scale the polynomial x → s*x where s = (|a_0/a_n|)^(1/n) (geometric mean
+    // root magnitude).  This maps the roots roughly to the unit circle so the
+    // Cauchy bound on the scaled polynomial is O(n) rather than O(10^56).
+    // We work with the scaled coefficients q_i = p_i * s^i / lead (so q_n = 1).
+    double s = 1.0;
+    if (std::fabs(p.coefficient[0]) > 1e-300) {
+      s = std::pow(std::fabs(p.coefficient[0] / lead), 1.0 / n);
+      s = std::max(s, 1e-10);
+      s = std::min(s, 1e10);
+    }
+
+    std::vector<double> q(n + 1);
+    {
+      double sp = 1.0;
+      for (int i = 0; i <= n; i++) { q[i] = p.coefficient[i] * sp / lead; sp *= s; }
+    }
+
+    // Cauchy bound on the scaled polynomial (coefficients are now O(1))
+    double r0 = 0.0;
+    for (int i = 0; i < n; i++) {
+      double b = std::fabs(q[i]);
+      if (b > r0) r0 = b;
+    }
+    r0 = std::min(1.0 + r0, 1000.0);  // cap at 1000 for safety
+
+    // Initial points on a circle; the 0.4-radian offset avoids axis alignment
+    std::vector<cplx> z(n);
+    for (int k = 0; k < n; k++) {
+      double angle = 2.0 * M_PI * k / n + 0.4;
+      z[k] = cplx(r0 * std::cos(angle), r0 * std::sin(angle));
+    }
+
+    std::vector<cplx> w(n);
+    const int MAX_ITER = 80;
+    const double TOL   = 1e-13;
+    double maxDelta = 1.0;
+
+    // Iterate on the SCALED polynomial q (coefficients are O(1)) for better
+    // numerical conditioning; z[k] are roots of q(y) where x = s*y.
+    for (int iter = 0; iter < MAX_ITER && maxDelta > TOL; iter++) {
+      maxDelta = 0.0;
+      for (int k = 0; k < n; k++) {
+        // Horner evaluation of Q(z[k]) and Q'(z[k]) using scaled coefficients
+        cplx pz  = q[n];
+        cplx dpz = cplx(0.0, 0.0);
+        for (int i = n - 1; i >= 0; i--) {
+          dpz = dpz * z[k] + pz;
+          pz  = pz  * z[k] + q[i];
+        }
+
+        if (std::abs(pz) < 1e-300) { w[k] = cplx(0.0,0.0); continue; }
+
+        // Aberth sum: Σ_{j≠k} 1/(z[k]-z[j])
+        cplx sum(0.0, 0.0);
+        for (int j = 0; j < n; j++) {
+          if (j != k) {
+            cplx diff = z[k] - z[j];
+            if (std::abs(diff) > 1e-300) sum += 1.0 / diff;
+          }
+        }
+        w[k] = pz / (dpz - pz * sum);
+        double d = std::abs(w[k]);
+        if (d > maxDelta) maxDelta = d;
+      }
+      for (int k = 0; k < n; k++) z[k] -= w[k];
+    }
+
+    // Map scaled roots y back to original roots x = s*y
+    for (int k = 0; k < n; k++) z[k] *= s;
+
+    // If Aberth did not converge, fall back to QR companion matrix.
+    if (maxDelta > 1e-6) {
+      try {
+        return qrCompanion(balanceCompanionMatrix(companionPoly(p)));
+      } catch (const std::exception&) {
+        // QR also failed; return best Aberth approximation
+      }
+    }
+
+    // Polish near-real roots onto the real axis using Newton on the original
+    // polynomial.  Aberth can leave roots with |Im| slightly above the 1e-3
+    // acceptance threshold when they should be real.
+    for (int k = 0; k < n; k++) {
+      if (std::abs(z[k].imag()) > 0.1) continue;  // clearly complex — skip
+      double x = z[k].real();
+      bool converged = false;
+      for (int it = 0; it < 30; it++) {
+        double pv = p.coefficient[n], dpv = 0.0;
+        for (int i = n - 1; i >= 0; i--) { dpv = dpv * x + pv; pv = pv * x + p.coefficient[i]; }
+        if (std::fabs(dpv) < 1e-300) break;
+        double dx = pv / dpv;
+        x -= dx;
+        if (std::fabs(dx) <= std::fabs(x) * 1e-12 + 1e-14) { converged = true; break; }
+      }
+      if (converged)
+        z[k] = cplx(x, 0.0);
+    }
+
+    std::vector<Complex> result(n);
+    for (int k = 0; k < n; k++) {
+      result[k].real      = z[k].real();
+      result[k].imaginary = z[k].imag();
+    }
+    return result;
+  }
 
   static Matrix companionPoly(const Polynomial &a)
   {

@@ -1,11 +1,15 @@
 #include <ikdh.h>
 #include <robots.h>
-#include <cstdio>
+#include "example_common.h"
+
+#ifndef ROBOTS_DIR
+#  define ROBOTS_DIR "robots"
+#endif
 
 int main()
 {
     // ── Load robot from YAML ──────────────────────────────────────────────────
-    auto robot = Robots::loadRobot("robots/gofa5.yaml");
+    auto robot = Robots::loadRobot(ROBOTS_DIR "/gofa5.yaml");
     IKDH::Solver solver(robot.dh, robot.limits);
 
     // ── Solve IK for two end-effector poses ───────────────────────────────────
@@ -15,15 +19,5 @@ int main()
         IKDH::poseFromXYZRPW(400.0, 0.0, 300.0, 180.0,  0.0, 0.0),
     };
 
-    for (const auto& ee : poses) {
-        auto sols = solver.solve(ee);
-
-        printf("%zu solution(s) found\n", sols.size());
-        for (size_t i = 0; i < sols.size(); ++i) {
-            printf("  [%2zu]", i);
-            for (double v : sols[i]) printf("  %7.3f", v);
-            printf("   FK err = %.1e\n", IKDH::fkError(ee, IKDH::forwardKin(robot.dh, sols[i])));
-        }
-        printf("\n");
-    }
+    for (const auto& ee : poses) printSolutions(solver, robot.dh, ee);
 }

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-compute_jacobian.py — Compute the symbolic geometric Jacobian for a 6R robot
+derive_jacobian.py — Compute the symbolic geometric Jacobian for a 6R robot
 from a DH YAML file and write the result back to the same file.
 
 Usage (from the repository root):
-    python3 tools/compute_jacobian.py robots/gofa5.yaml
+    python3 tools/derive_jacobian.py robots/gofa5.yaml
 
 Requires:
     pip install sympy

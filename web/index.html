@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IKDH — Inverse Kinematics Demo</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, sans-serif; color: #222; background: #fff; overflow: hidden; }
+
+#app { display: grid; grid-template-columns: 460px 1fr; height: 100vh; }
+
+/* ── Left panel ─────────────────────────────────────────────── */
+#left { overflow-y: scroll; padding: 20px 16px; border-right: 1px solid #e0e0e0; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; text-align: center; }
+.sub { font-size: 0.72rem; color: #111; margin: 0 0 20px; text-align: center; white-space: nowrap; }
+h2 { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #666; margin: 18px 0 7px; }
+#left > h2:first-of-type { margin-top: 4px; }
+
+select { width: 100%; padding: 5px 7px; font-size: 0.88rem; border: 1px solid #ccc; border-radius: 4px; }
+.robot-bar { display: flex; gap: 24px; align-items: center; }
+.robot-bar select { flex: 1; min-width: 0; width: auto; padding: 6px 7px; }
+#load-btn, #tool-btn { width: 74px; text-align: center; padding: 8px 0; font-size: 0.88rem; border: none; border-radius: 4px; background: #1a73e8; color: #fff; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+#load-btn:hover, #tool-btn:hover { background: #1558b0; }
+#tool-btn.active { background: #d93025; }
+#tool-btn.active:hover { background: #b3261e; }
+
+/* DH table */
+.dh-wrap { overflow-x: auto; margin-top: 12px; width: calc(100% - 74px - 24px); }
+table.dh { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+table.dh th { background: #f3f4f6; padding: 4px 3px; text-align: center; border: 1px solid #ddd; font-size: 0.7rem; white-space: nowrap; }
+table.dh td:not(.jn) .cw { display: flex; align-items: center; }
+.cell-unit { font-size: 0.6rem; color: #bbb; flex-shrink: 0; padding: 0 3px 0 2px; white-space: nowrap; }
+table.dh td { border: 1px solid #e4e4e4; padding: 1px; }
+table.dh td.jn { text-align: center; padding: 3px 5px; color: #999; background: #fafafa; font-size: 0.76rem; min-width: 22px; }
+table.dh input {
+  width: 100%; padding: 3px 4px; font-size: 0.76rem;
+  border: none; background: transparent; text-align: right;
+  -moz-appearance: textfield;
+}
+table.dh input::-webkit-inner-spin-button,
+table.dh input::-webkit-outer-spin-button { -webkit-appearance: none; }
+table.dh input:focus { outline: 1px solid #4a90e8; background: #fff; border-radius: 2px; }
+
+/* Pose inputs */
+.pose-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px 16px; }
+.field { display: flex; align-items: center; gap: 2px; }
+.field label { font-size: 0.7rem; color: #777; width: 18px; flex-shrink: 0; text-align: right; }
+.field input { flex: 1; min-width: 0; width: 0; padding: 3px 3px; font-size: 0.82rem; border: 1px solid #ccc; border-radius: 3px; text-align: right; box-sizing: border-box; appearance: textfield; }
+.field input::-webkit-outer-spin-button,
+.field input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.field .unit { font-size: 0.7rem; color: #aaa; width: 16px; flex-shrink: 0; }
+
+#btn { padding: 8px 18px; font-size: 0.88rem; background: #1a73e8; color: #fff; border: none; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
+.target-bar { display: flex; align-items: flex-start; gap: 24px; }
+.target-bar .pose-grid { flex: 1; min-width: 0; }
+#panel-solver { padding-top: 0; }
+#btn:disabled { background: #aaa; cursor: default; }
+#btn:hover:not(:disabled) { background: #1558b0; }
+
+#status { font-size: 0.76rem; color: #666; min-height: 1.1em; }
+#no-sol { font-size: 0.76rem; color: #c00; display: none; margin-top: 10px; }
+
+/* Results table */
+table#res { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.75rem; margin-top: 10px; }
+table#res th { background: #f3f4f6; padding: 4px 2px; border: 1px solid #ddd; text-align: right; font-size: 0.7rem; overflow: hidden; }
+table#res th:first-child { text-align: center; width: 22px; }
+table#res td { padding: 4px 2px; border: 1px solid #e8e8e8; text-align: right; font-family: 'Menlo', 'Consolas', monospace; font-size: 0.74rem; cursor: pointer; overflow: hidden; }
+table#res td:first-child { text-align: center; color: #aaa; width: 22px; }
+table#res tr:nth-child(even) { background: #fafafa; }
+table#res tr:hover td { background: #eef3ff; }
+table#res tr.sel td { background: #dce8ff; }
+
+hr.div { border: none; border-top: 1px solid #eee; margin: 10px 0; }
+
+.tabs { display: flex; gap: 0; margin: 20px 0 0; border-bottom: 2px solid #e0e0e0; }
+.tab { flex: 1; text-align: center; padding: 6px 0; font-size: 0.82rem; font-weight: 600; border: none; background: none; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; border-radius: 0; }
+.tab.active { color: #1a73e8; border-bottom: 2px solid #1a73e8; }
+.tab:hover:not(.active) { color: #444; }
+#panel-analysis .placeholder { font-size: 0.8rem; color: #aaa; margin-top: 16px; }
+#panel-analysis h2 { margin: 14px 0 10px; }
+
+/* About panel */
+#panel-about { padding: 16px 0 20px; }
+#panel-about p { font-size: 0.84rem; color: #333; line-height: 1.55; margin: 0 0 10px; }
+#panel-about strong { color: #111; }
+#panel-about a { color: #1a73e8; text-decoration: none; }
+#panel-about a:hover { text-decoration: underline; }
+#panel-about img { width: 100%; border-radius: 6px; margin: 12px 0 16px; display: block; }
+.about-btns { display: flex; gap: 10px; }
+.about-btn { flex: 1; padding: 8px 0; font-size: 0.84rem; font-weight: 600; border: none; border-radius: 5px; cursor: pointer; text-align: center; text-decoration: none; display: block; background: #1a73e8; color: #fff !important; }
+.about-btn:hover { background: #1558b0; }
+#panel-about .about-refs { font-size: 0.76rem; color: #666; line-height: 1.6; margin: 10px 0 0; }
+
+.view-opts { display: flex; justify-content: space-between; margin: 18px 0 20px; font-size: 0.8rem; width: 100%; }
+.view-opts label { display: flex; align-items: center; gap: 5px; cursor: pointer; color: #444; }
+
+/* Analysis panel */
+.jac-wrap { overflow-x: auto; overflow-y: hidden; margin-bottom: 6px; }
+.jac-layout { display: flex; align-items: center; gap: 4px; }
+.jac-eq-label { font-size: 0.82rem; color: #444; white-space: nowrap; align-self: center; }
+.jac-block { display: flex; flex-direction: column; }
+.jac-col-hdr { display: flex; padding-left: 45px; margin-bottom: 3px; }
+.jac-col-hdr span { width: 54px; text-align: right; font-size: 0.63rem; color: #aaa; padding-right: 5px; box-sizing: border-box; }
+.jac-body-row { display: flex; align-items: flex-start; gap: 6px; }
+.jac-row-labels { display: flex; flex-direction: column; width: 30px; flex-shrink: 0; }
+.jac-row-labels span { height: 22px; display: block; line-height: 22px; text-align: right; font-size: 0.68rem; font-style: italic; color: #aaa; }
+.jac-row-labels span sub { font-size: 0.78em; }
+.jac-matrix { position: relative; display: inline-block; padding: 2px 9px; }
+.jac-matrix::before, .jac-matrix::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 5px;
+  border: 1.5px solid #555;
+}
+.jac-matrix::before { left: 0; border-right: none; border-radius: 2px 0 0 2px; }
+.jac-matrix::after  { right: 0; border-left: none;  border-radius: 0 2px 2px 0; }
+table.jac { border-collapse: collapse; table-layout: fixed; }
+table.jac td { width: 54px; height: 22px; padding: 0 5px; line-height: 22px; text-align: right; font-family: 'Menlo','Consolas',monospace; font-size: 0.67rem; box-sizing: border-box; }
+table.jac tr:nth-child(odd) td { background: #fafafa; }
+.manip-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.m-lbl { font-size: 0.68rem; color: #999; min-width: 16px; }
+.m-val { font-family: 'Menlo','Consolas',monospace; font-size: 0.74rem; min-width: 54px; color: #222; }
+.ell-check { display: inline-flex; align-items: center; gap: 4px; font-size: 0.71rem; color: #555; cursor: pointer; margin: 0; user-select: none; }
+.ell-check input[type="checkbox"] { cursor: pointer; }
+#cb-ell-t, #cb-vec-t, #cb-ell-r, #cb-vec-r { accent-color: #1a73e8; }
+
+/* ── Right panel ────────────────────────────────────────────── */
+#right { position: relative; background: #f0f0f0; }
+canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
+#hint { position: absolute; bottom: 10px; right: 12px; font-size: 0.68rem; color: #aaa; pointer-events: none; }
+
+/* ── Console ─────────────────────────────────────────────────── */
+#con-panel { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; background: #fff; font-family: system-ui, -apple-system, sans-serif; font-size: 0.71rem; z-index: 100; display: flex; flex-direction: column; border-top: 1px solid #e0e0e0; }
+#con-handle { height: 34px; min-height: 34px; display: flex; align-items: center; padding: 0 12px; cursor: ns-resize; user-select: none; }
+#con-handle span { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #666; }
+#con-log { flex: 1; overflow-y: auto; padding: 4px 12px 2px; display: flex; flex-direction: column; gap: 1px; background: #fafafa; border-top: 1px solid #ebebeb; }
+#con-log .cl { display: flex; gap: 8px; line-height: 1.5; color: #333; }
+#con-log .cl.err { color: #c0392b; }
+#con-log .cl.out { color: #1a73e8; }
+#con-log .cl.inf { color: #1a73e8; }
+#con-log .cl.cmd { color: #222; }
+#con-log .cl .ts { flex-shrink: 0; color: #bbb; font-size: 0.68rem; padding-top: 0.15em; user-select: none; }
+#con-log .cl .msg { white-space: pre-wrap; word-break: break-all; }
+#con-input-row { display: flex; align-items: center; padding: 0 12px; height: 34px; border-top: 1px solid #ebebeb; flex-shrink: 0; background: #fff; }
+#con-prompt { color: #aaa; margin-right: 7px; font-weight: 600; }
+#con-input { flex: 1; background: none; border: none; outline: none; color: #222; font-family: inherit; font-size: inherit; caret-color: #222; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+</head>
+<body>
+<div id="app">
+
+<!-- ════ LEFT PANEL ════════════════════════════════════════════ -->
+<div id="left">
+  <h1>IKDH</h1>
+  <p class="sub">An <strong>Inverse Kinematic</strong> solver based on <strong>Denavit Hartenberg</strong> convention</p>
+
+  <h2>Robot</h2>
+  <div class="robot-bar">
+    <select id="robot-sel"></select>
+    <button id="load-btn">Load</button>
+    <input type="file" id="load-file" accept=".robot" style="display:none">
+  </div>
+
+  <div class="dh-wrap">
+    <table class="dh">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>θ₀</th>
+          <th>d</th>
+          <th>a</th>
+          <th>α</th>
+        </tr>
+      </thead>
+      <tbody id="dh-body"></tbody>
+    </table>
+  </div>
+
+  <h2>Tool</h2>
+  <div class="target-bar">
+    <div class="pose-grid" id="tool-section">
+      <div class="field"><label>X</label><input type="number" id="tool-x" value="0" step="1"><span class="unit">mm</span></div>
+      <div class="field"><label>Y</label><input type="number" id="tool-y" value="0" step="1"><span class="unit">mm</span></div>
+      <div class="field"><label>Z</label><input type="number" id="tool-z" value="0" step="1"><span class="unit">mm</span></div>
+      <div class="field"><label>Rx</label><input type="number" id="tool-rx" value="0" step="1"><span class="unit">°</span></div>
+      <div class="field"><label>Ry</label><input type="number" id="tool-ry" value="0" step="1"><span class="unit">°</span></div>
+      <div class="field"><label>Rz</label><input type="number" id="tool-rz" value="0" step="1"><span class="unit">°</span></div>
+    </div>
+    <button id="tool-btn">Add</button>
+  </div>
+
+  <div class="view-opts">
+    <label><input type="checkbox" id="show-frames" checked> Frames</label>
+    <label><input type="checkbox" id="show-joints"> Joints</label>
+    <label><input type="checkbox" id="show-bg" checked> Background</label>
+    <label><input type="checkbox" id="show-ee"> End-effector</label>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-solver">Solver</button>
+    <button class="tab" id="tab-analysis">Analysis</button>
+    <button class="tab" id="tab-about">About</button>
+  </div>
+
+  <div id="panel-solver">
+    <h2>Target pose</h2>
+    <div class="target-bar">
+      <div class="pose-grid">
+        <div class="field"><label>X</label><input type="number" id="px" value="500" step="10"><span class="unit">mm</span></div>
+        <div class="field"><label>Y</label><input type="number" id="py" value="0"   step="10"><span class="unit">mm</span></div>
+        <div class="field"><label>Z</label><input type="number" id="pz" value="500" step="10"><span class="unit">mm</span></div>
+        <div class="field"><label>Rx</label><input type="number" id="rx" value="0"   step="1"><span class="unit">°</span></div>
+        <div class="field"><label>Ry</label><input type="number" id="ry" value="90"  step="1"><span class="unit">°</span></div>
+        <div class="field"><label>Rz</label><input type="number" id="rz" value="0"   step="1"><span class="unit">°</span></div>
+      </div>
+      <button id="btn" disabled>Loading…</button>
+    </div>
+    <p id="no-sol">No solutions found within joint limits.</p>
+    <h2 id="solutions-title" style="display:none">Solutions</h2>
+    <table id="res" style="display:none">
+      <thead>
+        <tr><th>#</th><th>J1</th><th>J2</th><th>J3</th><th>J4</th><th>J5</th><th>J6</th></tr>
+      </thead>
+      <tbody id="res-body"></tbody>
+    </table>
+  </div>
+
+  <div id="panel-analysis" style="display:none">
+    <div id="analysis-empty">
+    </div>
+    <div id="analysis-content" style="display:none">
+
+      <h2>Jacobian</h2>
+      <div class="jac-wrap">
+        <div class="jac-layout">
+          <span class="jac-eq-label">J =</span>
+          <div class="jac-block">
+            <div class="jac-col-hdr" id="jac-col-hdr"></div>
+            <div class="jac-body-row">
+              <div class="jac-row-labels" id="jac-row-labels"></div>
+              <div class="jac-matrix"><table class="jac" id="jac-table"></table></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>Manipulability</h2>
+      <div id="manip-overview"></div>
+
+      <h2>Translation manipulability</h2>
+      <div id="manip-trans"></div>
+
+      <h2>Orientation manipulability</h2>
+      <div id="manip-rot"></div>
+
+    </div>
+  </div>
+
+  <div id="panel-about" style="display:none">
+    <p>IKDH is an <strong>Inverse Kinematics</strong> solver based on the <strong>Denavit–Hartenberg</strong> convention that enables finding <strong>all</strong> configurations for a given end-effector pose.</p>
+    <p>The library has been developed at the <strong>CoRo Lab</strong> by <strong>Axel Refalo</strong> to support kinematic analysis through the <strong>web interface</strong> as well as fast computation in <strong>Python</strong> and <strong>C++</strong>. It is strongly based on the <strong>HuPf</strong> algorithm [1] and [2].</p>
+    <p>To use the web interface you can <code>load</code> a <code>.robot</code> file from the <a href="https://robodk.com/library" target="_blank">RoboDK Robot Library</a> or select an already available morphology. When a robot is loaded or selected, its Jacobian and joint limits are printed in the terminal.<br>You can then add a tool with <code>add</code>, find all IK solutions with <code>solve</code>, and further analyse proximity to singularities with the translation and orientation manipulability ellipsoids.</p>
+    <p>Terminal commands also enable Cartesian and joint motion. See the <code>help</code> command for the full list.</p>
+    <p class="about-refs">[1] M. Husty, M. Pfurner and H.-P. Schröcker. A new and efficient algorithm for the inverse kinematics of a general serial 6R manipulator, <em>Mech. Mach. Theory</em> 42: 66–81, 2007.</p>
+    <img src="../img/CoRo.jpg" alt="CoRo Lab" style="max-height:60px;width:auto;max-width:50%;display:block;margin:12px auto 12px;">
+    <div class="about-btns">
+      <a class="about-btn about-btn-contribute" href="https://github.com/Lab-CORO/IKDH" target="_blank">Contribute</a>
+      <a class="about-btn about-btn-issues" href="https://github.com/Lab-CORO/IKDH/issues" target="_blank">Issues</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RIGHT PANEL ═══════════════════════════════════════════ -->
+<div id="right">
+  <canvas id="cv"></canvas>
+  <div id="hint">drag to orbit · scroll to zoom</div>
+  <div id="con-panel">
+    <div id="con-handle"><span>Terminal</span></div>
+    <div id="con-log"></div>
+    <div id="con-input-row">
+      <span id="con-prompt">&gt;</span>
+      <input id="con-input" type="text" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="ikdh.js"></script>
+<script src="analysis.js"></script>
+<script>
+'use strict';
+
+const D2R = Math.PI / 180;
+const R2D = 180 / Math.PI;
+
+// ─── Robot presets  (a/d metres · alpha/theta radians · lo/hi degrees) ───────
+// ─── Robot catalog (name + YAML path relative to ../robots/) ─────────────────
+// Serve from repo root: python3 -m http.server 8787  →  open /web/index.html
+const ROBOTS_BASE = '../robots/';
+const ROBOTS = [
+  { name: 'ABB CRB 15000-10', yaml: 'crb15000_10.yaml'    },
+  { name: 'ABB GoFa 5',       yaml: 'gofa5.yaml'           },
+  { name: 'ABB GoFa 12',      yaml: 'gofa12.yaml'          },
+  { name: 'Doosan A0509',     yaml: 'doosan_a0509.yaml'    },
+  { name: 'Fanuc CRX-5iA',   yaml: 'fanuc_crx_5ia.yaml'  },
+  { name: 'Fanuc CRX-10iA',  yaml: 'fanuc_crx_10ia.yaml' },
+  { name: 'Fanuc CRX-25iA',  yaml: 'fanuc_crx_25ia.yaml' },
+  { name: 'Fanuc CRX-30iA',  yaml: 'fanuc_crx_30ia.yaml' },
+  { name: 'UR3e',             yaml: 'ur3e.yaml'            },
+  { name: 'UR5e',             yaml: 'ur5e.yaml'            },
+  { name: 'UR10e',            yaml: 'ur10e.yaml'           },
+];
+ROBOTS.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true}));
+
+// ─── YAML parser — extracts DH, limits and Jacobian from .yaml text ──────────
+function _piExpr(s) {
+  s = s.trim();
+  if (!s || s === '0') return 0;
+  const P = Math.PI;
+  s = s.replace(/\bpi\b/g, `(${P})`);
+  try { return Function('return ' + s)(); } catch(e) { return parseFloat(s) || 0; }
+}
+function _parseArr(s) {
+  s = s.trim();
+  if (s[0] === '[') s = s.slice(1, -1);
+  return s.split(',').map(t => _piExpr(t));
+}
+function parseRobotYaml(text, displayName) {
+  const lines = text.split('\n');
+  let a, d, alpha, theta;
+  const lo = [], hi = [], jacRows = [];
+  let section = '';
+  for (const raw of lines) {
+    const t = raw.trim();
+    if (!t || t.startsWith('#')) continue;
+    if (t === 'dh:')       { section = 'dh';  continue; }
+    if (t === 'limits:')   { section = 'lim'; continue; }
+    if (t === 'jacobian:') { section = 'jac'; continue; }
+    if (t === 'rows:')     continue;
+    if (section === 'dh') {
+      if (t.startsWith('a:')     && t.includes('[')) a     = _parseArr(t.slice(2));
+      if (t.startsWith('d:')     && t.includes('[')) d     = _parseArr(t.slice(2));
+      if (t.startsWith('alpha:') && t.includes('[')) alpha = _parseArr(t.slice(6));
+      if (t.startsWith('theta:') && t.includes('[')) theta = _parseArr(t.slice(6));
+    }
+    if (section === 'lim' && /^J\d:/.test(t)) {
+      const m = t.match(/\[([-\d.eE+]+)[,\s]+([-\d.eE+]+)\]/);
+      if (m) { lo.push(parseFloat(m[1])); hi.push(parseFloat(m[2])); }
+    }
+    if (section === 'jac' && t.startsWith('- [')) {
+      const items = t.match(/"([^"]*)"/g);
+      if (items) jacRows.push(items.map(s => s.slice(1, -1)));
+    }
+  }
+  return { name: displayName, a, d, alpha, theta, lo, hi,
+           jac: jacRows.length === 6 ? jacRows : null };
+}
+
+// ─── Async robot loader with cache ───────────────────────────────────────────
+const _robotCache = {};
+async function loadRobotFromCatalog(entry) {
+  if (!_robotCache[entry.yaml]) {
+    try {
+      const resp = await fetch(ROBOTS_BASE + entry.yaml);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      _robotCache[entry.yaml] = parseRobotYaml(await resp.text(), entry.name);
+    } catch(e) {
+      if (window.conLog) conLog(`Cannot load ${entry.name}: ${e.message}`, 'err');
+      return;
+    }
+  }
+  loadRobot(_robotCache[entry.yaml]);
+}
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let currentDH      = null;   // {a,d,alpha,theta,lo,hi} — internal units
+let currentJacRows = null;   // symbolic Jacobian rows from YAML
+let currentQ       = [0,0,0,0,0,0];
+let robotReach     = 0.3;    // fixed per robot, computed at load time
+let solutions      = [];
+let IKDH           = null;
+let currentTool    = null;   // null = no tool; Float64Array(16) when non-identity
+let _speedL        = 100;    // MoveL linear speed  mm/s
+let _speedJ        = 60;     // MoveJ joint speed   deg/s
+let _showEE        = false;  // end-effector frame + path enabled
+let _eePathPoints  = [];     // THREE.Vector3 waypoints
+let _eePathLine    = null;   // THREE.Line in scene (not robotGroup)
+
+// ─── Build DH table rows ─────────────────────────────────────────────────────
+const dhBody = document.getElementById('dh-body');
+for (let i = 0; i < 6; i++) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td class="jn">J${i+1}</td>` +
+    ['theta','d','a','alpha'].map(f => {
+      const u = (f === 'a' || f === 'd') ? 'mm' : '°';
+      return `<td><div class="cw"><input type="number" data-j="${i}" data-f="${f}" step="any" autocomplete="off"><span class="cell-unit">${u}</span></div></td>`;
+    }).join('');
+  dhBody.appendChild(tr);
+}
+
+function populateTable(r) {
+  document.querySelectorAll('#dh-body input').forEach(inp => {
+    const j = +inp.dataset.j, f = inp.dataset.f;
+    if (f === 'alpha' || f === 'theta') inp.value = +(r[f][j] * R2D).toFixed(4);
+    else                                inp.value = +(r[f][j] * 1e3).toFixed(2);
+  });
+}
+
+const FULL_RANGE = Array(6).fill(-360);
+const FULL_RANGE_HI = Array(6).fill(360);
+
+function readTableToDH() {
+  const dh = { a:[], d:[], alpha:[], theta:[], lo: FULL_RANGE, hi: FULL_RANGE_HI };
+  document.querySelectorAll('#dh-body input').forEach(inp => {
+    const j = +inp.dataset.j, f = inp.dataset.f;
+    const v = parseFloat(inp.value) || 0;
+    dh[f][j] = (f === 'alpha' || f === 'theta') ? v * D2R : v * 1e-3;
+  });
+  return dh;
+}
+
+// ─── Robot selector ──────────────────────────────────────────────────────────
+const robotSel = document.getElementById('robot-sel');
+ROBOTS.forEach((r, i) => {
+  const o = document.createElement('option');
+  o.value = i; o.textContent = r.name;
+  robotSel.appendChild(o);
+});
+robotSel.addEventListener('change', () => loadRobotFromCatalog(ROBOTS[+robotSel.value]));
+
+// Live table edits → refresh scene
+dhBody.addEventListener('input', () => {
+  currentDH = readTableToDH();
+  updateScene([0,0,0,0,0,0]);
+  syncWASM();
+  clearResults();
+});
+
+// ─── Numerical Jacobian — geometric, from DH FK ──────────────────────────────
+function numericalJacobian(dh, q_rad) {
+  const q_deg = q_rad.map(v => v * R2D);
+  const frames = forwardKin(dh, q_deg);
+  const pe = [frames[6][3], frames[6][7], frames[6][11]];
+  const J = Array.from({length: 6}, () => new Array(6).fill(0));
+  for (let i = 0; i < 6; i++) {
+    const f  = frames[i];
+    const z  = [f[2], f[6], f[10]];          // z-axis of frame i-1
+    const p  = [f[3], f[7], f[11]];          // origin of frame i-1
+    const dp = [pe[0]-p[0], pe[1]-p[1], pe[2]-p[2]];
+    J[0][i] = z[1]*dp[2] - z[2]*dp[1];      // linear: z × (pe - p)
+    J[1][i] = z[2]*dp[0] - z[0]*dp[2];
+    J[2][i] = z[0]*dp[1] - z[1]*dp[0];
+    J[3][i] = z[0];                           // angular: z
+    J[4][i] = z[1];
+    J[5][i] = z[2];
+  }
+  return J;
+}
+
+// ─── FK — mirrors the C++ dhMatrix / forwardKin exactly ──────────────────────
+function mul4(A, B) {
+  const C = new Float64Array(16);
+  for (let r = 0; r < 4; r++)
+    for (let c = 0; c < 4; c++)
+      for (let k = 0; k < 4; k++)
+        C[r*4+c] += A[r*4+k] * B[k*4+c];
+  return C;
+}
+
+function dhMat(theta, d, a, ca, sa) {
+  const ct = Math.cos(theta), st = Math.sin(theta);
+  return new Float64Array([
+     ct, -st*ca,  st*sa, a*ct,
+     st,  ct*ca, -ct*sa, a*st,
+      0,     sa,     ca,    d,
+      0,      0,      0,    1
+  ]);
+}
+
+// Returns 7 cumulative world-frame 4×4 matrices (base identity + 6 joints)
+function forwardKin(dh, q_deg) {
+  let T = new Float64Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+  const frames = [T.slice()];
+  for (let i = 0; i < 6; i++) {
+    const Ti = dhMat(
+      dh.theta[i] + q_deg[i] * D2R,
+      dh.d[i], dh.a[i],
+      Math.cos(dh.alpha[i]), Math.sin(dh.alpha[i])
+    );
+    T = mul4(T, Ti);
+    frames.push(T.slice());
+  }
+  return frames;
+}
+
+// ─── Tool math ───────────────────────────────────────────────────────────────
+// Build 4×4 rigid transform from XYZ (mm) + intrinsic ZYX rotation (deg)
+function poseFromXYZRPW_JS(x_mm, y_mm, z_mm, rx_deg, ry_deg, rz_deg) {
+  const rx = rx_deg*D2R, ry = ry_deg*D2R, rz = rz_deg*D2R;
+  const cx = Math.cos(rx), sx = Math.sin(rx);
+  const cy = Math.cos(ry), sy = Math.sin(ry);
+  const cz = Math.cos(rz), sz = Math.sin(rz);
+  return new Float64Array([
+    cy*cz,  cz*sx*sy - cx*sz,  cx*cz*sy + sx*sz,  x_mm*1e-3,
+    cy*sz,  cx*cz + sx*sy*sz,  cx*sy*sz - cz*sx,  y_mm*1e-3,
+    -sy,    cy*sx,             cx*cy,              z_mm*1e-3,
+    0,      0,                 0,                  1
+  ]);
+}
+
+// Rigid-body inverse: [R^T, -R^T·p; 0,0,0,1]
+function invertTransform(T) {
+  const inv = new Float64Array(16);
+  inv[0]  = T[0]; inv[1]  = T[4]; inv[2]  = T[8];
+  inv[4]  = T[1]; inv[5]  = T[5]; inv[6]  = T[9];
+  inv[8]  = T[2]; inv[9]  = T[6]; inv[10] = T[10];
+  inv[3]  = -(T[0]*T[3] + T[4]*T[7] + T[8]*T[11]);
+  inv[7]  = -(T[1]*T[3] + T[5]*T[7] + T[9]*T[11]);
+  inv[11] = -(T[2]*T[3] + T[6]*T[7] + T[10]*T[11]);
+  inv[15] = 1;
+  return inv;
+}
+
+// Extract XYZ (mm) + RPW (deg) from a row-major 4×4 matrix
+function matToXYZRPW(T) {
+  const x = T[3]*1e3, y = T[7]*1e3, z = T[11]*1e3;
+  const ry = Math.asin(Math.max(-1, Math.min(1, -T[8])));
+  const cy = Math.cos(ry);
+  let rx, rz;
+  if (Math.abs(cy) > 1e-6) {
+    rx = Math.atan2(T[9]/cy, T[10]/cy);
+    rz = Math.atan2(T[4]/cy, T[0]/cy);
+  } else {
+    rx = Math.atan2(-T[6], T[5]);
+    rz = 0;
+  }
+  return [x, y, z, rx*R2D, ry*R2D, rz*R2D];
+}
+
+let _toolActive = false;
+
+// Read tool inputs; returns null when tool is not active
+function readTool() {
+  if (!_toolActive) return null;
+  const x  = parseFloat(document.getElementById('tool-x').value)  || 0;
+  const y  = parseFloat(document.getElementById('tool-y').value)  || 0;
+  const z  = parseFloat(document.getElementById('tool-z').value)  || 0;
+  const rx = parseFloat(document.getElementById('tool-rx').value) || 0;
+  const ry = parseFloat(document.getElementById('tool-ry').value) || 0;
+  const rz = parseFloat(document.getElementById('tool-rz').value) || 0;
+  if (x === 0 && y === 0 && z === 0 && rx === 0 && ry === 0 && rz === 0) return null;
+  return poseFromXYZRPW_JS(x, y, z, rx, ry, rz);
+}
+
+// ─── Three.js scene ──────────────────────────────────────────────────────────
+const canvas   = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0xf2f2f2);
+
+const scene  = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.001, 200);
+camera.up.set(0, 0, 1);   // Z-up (robotics convention)
+
+const orbit = new THREE.OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.dampingFactor = 0.12;
+
+// Reference grid in the XY plane at Z=0 (floor in Z-up world)
+const grid = new THREE.GridHelper(2, 20, 0xbbbbbb, 0xdddddd);
+grid.rotation.x = Math.PI / 2;
+scene.add(grid);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+dirLight.position.set(3, -4, 6);
+scene.add(dirLight);
+
+// All robot geometry lives in this group; cleared and rebuilt on each update
+const robotGroup = new THREE.Group();
+scene.add(robotGroup);
+
+// Extract frame origin and axis column-vectors from a row-major 4×4
+function frameVecs(m) {
+  return {
+    o: new THREE.Vector3(m[3],  m[7],  m[11]),
+    x: new THREE.Vector3(m[0],  m[4],  m[8]),
+    y: new THREE.Vector3(m[1],  m[5],  m[9]),
+    z: new THREE.Vector3(m[2],  m[6],  m[10]),
+  };
+}
+
+// Fully custom arrow: cylinder shaft + cone head, guaranteed seamless join
+function makeArrow(dir, origin, len, color, hLen, hW) {
+  const mat     = new THREE.MeshPhongMaterial({ color, shininess: 60 });
+  const normDir = dir.clone().normalize();
+  const up      = new THREE.Vector3(0, 1, 0);
+  const group   = new THREE.Group();
+  group.position.copy(origin);
+
+  function orientToDir(mesh) {
+    if (normDir.dot(up) > -0.9999)
+      mesh.quaternion.setFromUnitVectors(up, normDir);
+    else
+      mesh.quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI);
+  }
+
+  const shaftLen = Math.max(0, len - hLen);
+  const shaftR   = hW * 0.22;
+
+  if (shaftLen > 1e-4) {
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(shaftR, shaftR, shaftLen, 16, 1), mat);
+    shaft.position.copy(normDir).multiplyScalar(shaftLen * 0.5);
+    orientToDir(shaft);
+    group.add(shaft);
+  }
+
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(hW * 0.5, hLen, 32, 1), mat);
+  cone.position.copy(normDir).multiplyScalar(shaftLen + hLen * 0.5);
+  orientToDir(cone);
+  group.add(cone);
+
+  return group;
+}
+
+// Tube (cylinder) between two Vector3 points
+function makeTube(p0, p1, radius, mat) {
+  const dir = new THREE.Vector3().subVectors(p1, p0);
+  const len = dir.length();
+  if (len < 1e-6) return null;
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 10, 1), mat);
+  mesh.position.addVectors(p0, p1).multiplyScalar(0.5);
+  const axis = dir.normalize();
+  if (axis.dot(new THREE.Vector3(0, 1, 0)) > -0.9999)
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), axis);
+  else
+    mesh.quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI);
+  return mesh;
+}
+
+// ─── End-effector path helpers ───────────────────────────────────────────────
+function _clearEEPath() {
+  _eePathPoints = [];
+  if (_eePathLine) { scene.remove(_eePathLine); _eePathLine = null; }
+}
+
+function _addEEPoint(q_deg) {
+  const frames = forwardKin(currentDH, q_deg);
+  const p = frameVecs(frames[6]).o;
+  _eePathPoints.push(p.clone());
+  if (_eePathLine) scene.remove(_eePathLine);
+  if (_eePathPoints.length < 2) return;
+  const geo = new THREE.BufferGeometry().setFromPoints(_eePathPoints);
+  const mat = new THREE.LineBasicMaterial({ color: 0x1a73e8 });
+  _eePathLine = new THREE.Line(geo, mat);
+  scene.add(_eePathLine);
+}
+
+function updateScene(q_deg) {
+  if (!currentDH) return;
+  currentQ = q_deg;
+
+  while (robotGroup.children.length) robotGroup.remove(robotGroup.children[0]);
+
+  const frames = forwardKin(currentDH, q_deg);
+  const showFrames = document.getElementById('show-frames').checked;
+  const showJoints = document.getElementById('show-joints').checked;
+
+  const axLen = robotReach * 0.12;
+
+  // ── RGB axis triads ────────────────────────────────────────────
+  if (showFrames) {
+    const headL = axLen * 0.28, headW = axLen * 0.18;
+    for (let i = 0; i < frames.length; i++) {
+      const { o, x, y, z } = frameVecs(frames[i]);
+      if (x.lengthSq() > 1e-10) robotGroup.add(makeArrow(x.normalize(), o, axLen, 0xee2222, headL, headW));
+      if (y.lengthSq() > 1e-10) robotGroup.add(makeArrow(y.normalize(), o, axLen, 0x22bb22, headL, headW));
+      if (z.lengthSq() > 1e-10) robotGroup.add(makeArrow(z.normalize(), o, axLen, 0x2255ff, headL, headW));
+    }
+  }
+
+  // ── Link tubes — two segments per link: d along z, then a along x ─────────
+  const linkMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
+  const linkR = axLen * 0.026;
+  for (let i = 1; i < frames.length; i++) {
+    const f  = frames[i-1];
+    const d  = currentDH.d[i-1];
+    // Intermediate point: translate d along z-axis of frame i-1
+    const pInt = new THREE.Vector3(f[2]*d + f[3], f[6]*d + f[7], f[10]*d + f[11]);
+    const p0 = frameVecs(frames[i-1]).o;
+    const p1 = frameVecs(frames[i]).o;
+    const t1 = makeTube(p0, pInt, linkR, linkMat);  // d segment
+    if (t1) robotGroup.add(t1);
+    const t2 = makeTube(pInt, p1, linkR, linkMat);  // a segment
+    if (t2) robotGroup.add(t2);
+  }
+
+  // ── Joint cylinders (revolute joints 1-6 at frames[0..5]) ─────
+  if (showJoints) {
+    const jR   = robotReach * 0.028;
+    const jH   = robotReach * 0.09;
+    const jGeo = new THREE.CylinderGeometry(jR, jR, jH, 32);
+    const jMat = new THREE.MeshPhongMaterial({ color: 0x607d8b, shininess: 140 });
+    const up   = new THREE.Vector3(0, 1, 0);
+
+    for (let i = 0; i < 6; i++) {
+      const { o, z } = frameVecs(frames[i]);
+      const mesh = new THREE.Mesh(jGeo, jMat);
+      mesh.position.copy(o);
+      const axis = z.clone().normalize();
+      if (axis.dot(up) > -0.9999) {
+        mesh.quaternion.setFromUnitVectors(up, axis);
+      } else {
+        mesh.quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI);
+      }
+      robotGroup.add(mesh);
+    }
+  }
+
+  // ── Flange dot ─────────────────────────────────────────────────
+  {
+    const dotR    = axLen * 0.07;
+    const dotMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(dotR, 16, 12),
+      new THREE.MeshPhongMaterial({ color: 0x222222, shininess: 120 })
+    );
+    dotMesh.position.copy(frameVecs(frames[6]).o);
+    robotGroup.add(dotMesh);
+  }
+
+  // ── End-effector frame ────────────────────────────────────────────────────────
+  if (_showEE) {
+    const headL = axLen * 0.28, headW = axLen * 0.18;
+    // Show tool frame if tool is active, otherwise flange frame
+    const eeMat = currentTool ? mul4(frames[6], currentTool) : frames[6];
+    if (!showFrames || currentTool) {
+      const { o, x, y, z } = frameVecs(eeMat);
+      robotGroup.add(makeArrow(x.normalize(), o, axLen, 0xee2222, headL, headW));
+      robotGroup.add(makeArrow(y.normalize(), o, axLen, 0x22bb22, headL, headW));
+      robotGroup.add(makeArrow(z.normalize(), o, axLen, 0x2255ff, headL, headW));
+    }
+  }
+
+  // ── Tool frame ─────────────────────────────────────────────────
+  if (currentTool) {
+    const toolMat  = mul4(frames[6], currentTool);
+    const { o: tO, x: tX, y: tY, z: tZ } = frameVecs(toolMat);
+    const { o: fO, z: fZ } = frameVecs(frames[6]);
+
+    // Find where the flange z-axis and the tool z-axis meet.
+    // L1: fO + t·d1,  L2: tO + s·d2
+    // Solve closest-approach; lines meet exactly when denom > 0 and they're coplanar.
+    const d1 = fZ.clone().normalize();
+    const d2 = tZ.clone().normalize();
+    const b  = d1.dot(d2);
+    const denom = 1 - b * b;
+    let meet;
+    if (denom < 1e-8) {
+      // Parallel axes: meet at TCP projected onto flange z-line
+      const t = d1.dot(new THREE.Vector3().subVectors(tO, fO));
+      meet = fO.clone().addScaledVector(d1, t);
+    } else {
+      const w = new THREE.Vector3().subVectors(fO, tO);
+      const t = (b * d2.dot(w) - d1.dot(w)) / denom;
+      const s = (d2.dot(w) - b * d1.dot(w)) / denom;
+      const P1 = fO.clone().addScaledVector(d1, t);
+      const P2 = tO.clone().addScaledVector(d2, s);
+      meet = P1.clone().add(P2).multiplyScalar(0.5); // midpoint (exact if lines coplanar)
+    }
+    const tl1 = makeTube(fO,  meet, linkR, linkMat); // flange z → meeting point
+    if (tl1) robotGroup.add(tl1);
+    const tl2 = makeTube(tO,  meet, linkR, linkMat); // tool z   → meeting point
+    if (tl2) robotGroup.add(tl2);
+    if (showFrames) {
+      const headL = axLen * 0.28, headW = axLen * 0.18;
+      robotGroup.add(makeArrow(tX.normalize(), tO, axLen, 0xee2222, headL, headW));
+      robotGroup.add(makeArrow(tY.normalize(), tO, axLen, 0x22bb22, headL, headW));
+      robotGroup.add(makeArrow(tZ.normalize(), tO, axLen, 0x2255ff, headL, headW));
+    }
+    // EE frame at tool is already handled in the _showEE block above
+  }
+}
+
+// Reposition camera to frame the robot — only called on robot change
+function fitCamera(frames) {
+  // Use the maximum reach from origin as the characteristic robot size
+  let reach = 0.3;
+  for (const f of frames)
+    reach = Math.max(reach, Math.hypot(f[3], f[7], f[11]));
+
+  const d = reach * 2.4;
+  const tgt = new THREE.Vector3(0, 0, reach * 0.35);
+  orbit.target.copy(tgt);
+  camera.position.set(d * 0.55, -d * 0.80, d * 0.55);
+  camera.lookAt(tgt);
+  orbit.update();
+}
+
+function onResize() {
+  const el = document.getElementById('right');
+  const w = el.clientWidth, h = el.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', onResize);
+onResize();
+
+(function loop() { requestAnimationFrame(loop); orbit.update(); renderer.render(scene, camera); })();
+
+// ─── Speed setters ───────────────────────────────────────────────────────────
+function SetSpeedL(v) { _speedL = Math.max(1, +v || _speedL); conLog(`Linear speed: ${_speedL} mm/s`, 'out'); }
+function SetSpeedJ(v) { _speedJ = Math.max(1, +v || _speedJ); conLog(`Joint speed:  ${_speedJ} °/s`,  'out'); }
+
+// ─── Help ─────────────────────────────────────────────────────────────────────
+function Help() {
+  const cmds = [
+    ['MoveL x, y, z, rx, ry, rz',    'Cartesian linear motion  (mm, deg)'],
+    ['MoveJ q1, q2, q3, q4, q5, q6', 'Joint space motion       (deg)'],
+    ['SetSpeedL <mm/s>',              `Set cartesian speed      (current: ${_speedL} mm/s)`],
+    ['SetSpeedJ <deg/s>',             `Set joint speed          (current: ${_speedJ} °/s)`],
+    ['Help',                          'Show this message'],
+    ['Clear',                         'Clear terminal output'],
+  ];
+  conLog(' ', 'inf');
+  conLog('Commands:', 'out');
+  cmds.forEach(([cmd, desc]) => conLog(`  ${cmd.padEnd(34)}${desc}`, 'inf'));
+  conLog(' ', 'inf');
+}
+
+// ─── 6×6 Gauss-Jordan inverse — returns null when singular ───────────────────
+function _inv6(J) {
+  const n = 6;
+  const A = J.map(r => [...r]);
+  const I = Array.from({length:n}, (_, i) => Array.from({length:n}, (_, j) => i===j?1:0));
+  for (let c = 0; c < n; c++) {
+    let p = c;
+    for (let r = c+1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]]; [I[c], I[p]] = [I[p], I[c]];
+    const f = A[c][c];
+    if (Math.abs(f) < 1e-10) return null;
+    for (let j = 0; j < n; j++) { A[c][j] /= f; I[c][j] /= f; }
+    for (let r = 0; r < n; r++) if (r !== c) {
+      const g = A[r][c];
+      for (let j = 0; j < n; j++) { A[r][j] -= g*A[c][j]; I[r][j] -= g*I[c][j]; }
+    }
+  }
+  return I;
+}
+
+// ─── Rotation matrix from RPW degrees (same convention as poseFromXYZRPW_JS) ─
+function _rpwToR(rpw) {
+  const rx=rpw[0]*D2R, ry=rpw[1]*D2R, rz=rpw[2]*D2R;
+  const cx=Math.cos(rx),sx=Math.sin(rx), cy=Math.cos(ry),sy=Math.sin(ry), cz=Math.cos(rz),sz=Math.sin(rz);
+  return [[cy*cz,cz*sx*sy-cx*sz,cx*cz*sy+sx*sz],[cy*sz,cx*cz+sx*sy*sz,cx*sy*sz-cz*sx],[-sy,cy*sx,cx*cy]];
+}
+
+// ─── Orientation error as rotation vector [rad] ───────────────────────────────
+function _orientError(tgt_rpw, cur_rpw) {
+  const Rt = _rpwToR(tgt_rpw), Rc = _rpwToR(cur_rpw);
+  const R = Rt.map(ri => [0,1,2].map(j => ri[0]*Rc[j][0]+ri[1]*Rc[j][1]+ri[2]*Rc[j][2]));
+  const angle = Math.acos(Math.max(-1, Math.min(1, (R[0][0]+R[1][1]+R[2][2]-1)/2)));
+  if (angle < 1e-8) return [0,0,0];
+  const f = angle / (2*Math.sin(angle));
+  return [(R[2][1]-R[1][2])*f, (R[0][2]-R[2][0])*f, (R[1][0]-R[0][1])*f];
+}
+
+// ─── MoveJ — joint-space motion ──────────────────────────────────────────────
+function _updateTargetInputs(pose) {
+  ['px','py','pz','rx','ry','rz'].forEach((id, i) =>
+    document.getElementById(id).value = pose[i].toFixed(2));
+}
+
+function MoveJ(...args) {
+  if (!currentDH) { conLog('MoveJ: no robot loaded', 'err'); return; }
+  if (args.length !== 6) { conLog('MoveJ: need 6 joint angles (°)', 'err'); return; }
+  const target   = args.map(Number);
+  const start    = [...currentQ];
+  const maxDelta = Math.max(...start.map((s, i) => Math.abs(target[i] - s)));
+  const N        = Math.max(10, Math.ceil(maxDelta / (_speedJ / 60)));
+  let step = 0;
+
+  function tick() {
+    const t = step / N;
+    const q = start.map((s, i) => s + t*(target[i]-s));
+    for (let i = 0; i < 6; i++) {
+      if (q[i] < currentDH.lo[i] || q[i] > currentDH.hi[i]) {
+        updateScene(q);
+        conLog(`MoveJ stopped: J${i+1}=${q[i].toFixed(1)}° outside [${currentDH.lo[i]},${currentDH.hi[i]}]°`, 'err');
+        return;
+      }
+    }
+    updateScene(q);
+    computeAndDisplayJacobian(q);
+    if (_showEE) _addEEPoint(q);
+    _updateTargetInputs(matToXYZRPW(forwardKin(currentDH, q)[6]));
+    step++;
+    if (step <= N) requestAnimationFrame(tick);
+    else conLog('MoveJ done', 'out');
+  }
+  requestAnimationFrame(tick);
+}
+
+// ─── MoveL — Cartesian linear motion via J⁻¹ ─────────────────────────────────
+function MoveL(...args) {
+  if (!currentDH) { conLog('MoveL: no robot loaded', 'err'); return; }
+  if (args.length !== 6) { conLog('MoveL: need x,y,z,rx,ry,rz', 'err'); return; }
+  const target    = args.map(Number);
+  let q_rad       = [...currentQ].map(v => v*D2R);
+  let curr_frames = forwardKin(currentDH, currentQ);
+  let curr_pose   = matToXYZRPW(curr_frames[6]);
+  const dist      = Math.sqrt([0,1,2].reduce((s,i) => s+(target[i]-curr_pose[i])**2, 0));
+  const N         = Math.max(20, Math.ceil(dist / (_speedL / 60)));
+
+  const wps = Array.from({length:N}, (_, i) => {
+    const t = (i+1)/N;
+    return curr_pose.map((c, k) => c + t*(target[k]-c));
+  });
+
+  let step = 0;
+  function tick() {
+    if (step >= wps.length) { conLog('MoveL done', 'out'); return; }
+    const wp = wps[step];
+
+    const dp = [(wp[0]-curr_pose[0])/1000, (wp[1]-curr_pose[1])/1000, (wp[2]-curr_pose[2])/1000];
+    const dw = _orientError([wp[3],wp[4],wp[5]], [curr_pose[3],curr_pose[4],curr_pose[5]]);
+    const dx = [...dp, ...dw];
+
+    const J    = currentJacRows ? evalJacobian(currentJacRows, q_rad) : numericalJacobian(currentDH, q_rad);
+    const Jinv = _inv6(J);
+    if (!Jinv) {
+      const w  = Math.abs(_det6(J));
+      const tv = eig3sym(aat3([J[0],J[1],J[2]]));
+      const rv = eig3sym(aat3([J[3],J[4],J[5]]));
+      const mt = Math.sqrt(Math.max(0, tv.vals[0]*tv.vals[1]*tv.vals[2]));
+      const mo = Math.sqrt(Math.max(0, rv.vals[0]*rv.vals[1]*rv.vals[2]));
+      conLog(`MoveL stopped: singularity — μ=${w.toExponential(2)}, μt=${mt.toExponential(2)}, μo=${mo.toExponential(2)}`, 'err');
+      return;
+    }
+
+    const dq = Jinv.map(row => row.reduce((s,v,k) => s+v*dx[k], 0));
+    q_rad = q_rad.map((v,i) => v+dq[i]);
+    const q_deg = q_rad.map(v => v*R2D);
+
+    for (let i = 0; i < 6; i++) {
+      if (q_deg[i] < currentDH.lo[i] || q_deg[i] > currentDH.hi[i]) {
+        updateScene(q_deg);
+        conLog(`MoveL stopped: J${i+1}=${q_deg[i].toFixed(1)}° outside [${currentDH.lo[i]},${currentDH.hi[i]}]°`, 'err');
+        return;
+      }
+    }
+
+    curr_frames = forwardKin(currentDH, q_deg);
+    curr_pose   = matToXYZRPW(curr_frames[6]);
+
+    const trans_err = Math.sqrt([0,1,2].reduce((s,i) => s+(curr_pose[i]-wp[i])**2, 0));
+    const orien_err = Math.sqrt(_orientError([wp[3],wp[4],wp[5]],[curr_pose[3],curr_pose[4],curr_pose[5]]).reduce((s,v)=>s+v*v,0))*R2D;
+    if (trans_err > 1.0) { conLog(`MoveL stopped: position error ${trans_err.toFixed(2)} mm`, 'err'); return; }
+    if (orien_err > 1.0) { conLog(`MoveL stopped: orientation error ${orien_err.toFixed(3)}°`, 'err'); return; }
+
+    updateScene(q_deg);
+    computeAndDisplayJacobian(q_deg);
+    if (_showEE) _addEEPoint(q_deg);
+    _updateTargetInputs(curr_pose);
+    step++;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ─── Export loaded .robot as .yaml (downloaded to disk) ─────────────────────
+function _fmtAngle(rad) {
+  const cands = [[0,1],[1,2],[-1,2],[1,1],[-1,1],[3,2],[-3,2],[1,4],[-1,4]];
+  for (const [n, d] of cands) {
+    if (Math.abs(rad - n / d * Math.PI) < 1e-6) {
+      if (n === 0) return '0';
+      const mag = Math.abs(n) === 1 ? '' : Math.abs(n) + '*';
+      const sign = n < 0 ? '-' : '';
+      return d === 1 ? `${sign}${mag}pi` : `${sign}${mag}pi/${d}`;
+    }
+  }
+  return +rad.toFixed(8) + '';
+}
+
+function _downloadYaml(preset) {
+  const fv = v => +parseFloat(v).toFixed(6) + '';
+  let y = `name: ${preset.name}\ndh:\n`;
+  y += `  a:     [${preset.a.map(fv).join(', ')}]\n`;
+  y += `  d:     [${preset.d.map(fv).join(', ')}]\n`;
+  y += `  alpha: [${preset.alpha.map(_fmtAngle).join(', ')}]\n`;
+  y += `  theta: [${preset.theta.map(_fmtAngle).join(', ')}]\n`;
+  y += `limits:\n`;
+  for (let i = 0; i < 6; i++)
+    y += `  J${i+1}: [${(+preset.lo[i]).toFixed(1)}, ${(+preset.hi[i]).toFixed(1)}]\n`;
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([y], {type:'text/yaml'})),
+    download: preset.name + '.yaml'
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ─── WASM sync ───────────────────────────────────────────────────────────────
+function syncWASM() {
+  if (!IKDH || !currentDH) return;
+  IKDH.setRobot(currentDH.a, currentDH.d, currentDH.alpha, currentDH.theta, currentDH.lo, currentDH.hi);
+}
+
+// ─── Load a robot preset ─────────────────────────────────────────────────────
+function computeReach(dh) {
+  const f = forwardKin(dh, [0,0,0,0,0,0]);
+  let r = 0.1;
+  for (const m of f) r = Math.max(r, Math.abs(m[3]), Math.abs(m[7]), Math.abs(m[11]));
+  return r;
+}
+
+function _logRobotLoad(preset) {
+  if (!window.conLog) return;
+  conLog(' ', 'inf');
+  conLog(`Robot: ${preset.name}`, 'out');
+  let lim = 'Limits:';
+  for (let i = 0; i < 6; i++)
+    lim += `  J${i+1}[${(+preset.lo[i]).toFixed(0)}, ${(+preset.hi[i]).toFixed(0)}]°`;
+  conLog(lim, 'inf');
+  if (currentJacRows) {
+    conLog('Jacobian:', 'inf');
+    const rl = ['vx','vy','vz','ωx','ωy','ωz'];
+    currentJacRows.forEach((row, i) => {
+      conLog(`  ${rl[i]}  [ ${row.join(',  ')} ]`, 'inf');
+    });
+  } else {
+    conLog('Jacobian: not available for this robot', 'inf');
+  }
+}
+
+function loadRobot(preset) {
+  populateTable(preset);
+  currentDH = readTableToDH();
+  robotReach = computeReach(currentDH);
+  const homeFrames = forwardKin(currentDH, [0,0,0,0,0,0]);
+  fitCamera(homeFrames);
+  updateScene([0,0,0,0,0,0]);
+  syncWASM();
+  clearResults();
+  currentJacRows = preset.jac || null;
+  _logRobotLoad(preset);
+}
+
+// ─── IK ──────────────────────────────────────────────────────────────────────
+function clearResults() {
+  solutions = [];
+  document.getElementById('res').style.display = 'none';
+  document.getElementById('solutions-title').style.display = 'none';
+  document.getElementById('no-sol').style.display = 'none';
+  document.getElementById('analysis-empty').style.display = '';
+  document.getElementById('analysis-content').style.display = 'none';
+  clearAnalysisState();
+}
+
+function runSolve() {
+  if (!IKDH || !currentDH) return;
+  syncWASM();
+
+  const x  = parseFloat(document.getElementById('px').value);
+  const y  = parseFloat(document.getElementById('py').value);
+  const z  = parseFloat(document.getElementById('pz').value);
+  const rx = parseFloat(document.getElementById('rx').value);
+  const ry = parseFloat(document.getElementById('ry').value);
+  const rz = parseFloat(document.getElementById('rz').value);
+
+  // When a tool is defined, find the flange pose that places the tool at the target
+  let [sx, sy, sz, srx, sry, srz] = [x, y, z, rx, ry, rz];
+  if (currentTool) {
+    const T_flange = mul4(poseFromXYZRPW_JS(x, y, z, rx, ry, rz), invertTransform(currentTool));
+    [sx, sy, sz, srx, sry, srz] = matToXYZRPW(T_flange);
+  }
+
+  const t0 = performance.now();
+  const sols = IKDH.solve(sx, sy, sz, srx, sry, srz);
+  const ms = (performance.now() - t0).toFixed(1);
+
+  clearResults();
+
+  if (!sols || sols.length === 0) {
+    document.getElementById('no-sol').style.display = 'block';
+    conLog(`No solutions (${ms} ms)`, 'err');
+    updateScene([0,0,0,0,0,0]);
+    return;
+  }
+
+  solutions = Array.from({ length: sols.length }, (_, i) =>
+    Array.from({ length: 6 }, (_, j) => sols[i][j])
+  );
+
+  const tbody = document.getElementById('res-body');
+  tbody.innerHTML = '';
+  solutions.forEach((sol, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td>` + sol.map(v => `<td>${v.toFixed(2)}<span class="cell-unit">°</span></td>`).join('');
+    tr.addEventListener('click', () => {
+      document.querySelectorAll('#res-body tr').forEach(r => r.classList.remove('sel'));
+      tr.classList.add('sel');
+      updateScene(sol);
+      computeAndDisplayJacobian(sol);
+    });
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('res').style.display = 'table';
+  document.getElementById('solutions-title').style.display = '';
+  const msg = `Found ${solutions.length} solution${solutions.length !== 1 ? 's' : ''} in ${ms} ms`;
+  conLog(msg, 'out');
+
+  // Auto-select and display first solution
+  tbody.firstElementChild.classList.add('sel');
+  updateScene(solutions[0]);
+  computeAndDisplayJacobian(solutions[0]);
+}
+
+document.getElementById('btn').addEventListener('click', runSolve);
+
+// ─── Tool Add / Remove ───────────────────────────────────────────────────────
+document.getElementById('tool-btn').addEventListener('click', () => {
+  _toolActive = !_toolActive;
+  const btn = document.getElementById('tool-btn');
+  btn.textContent = _toolActive ? 'Remove' : 'Add';
+  btn.classList.toggle('active', _toolActive);
+  const q = solutions.length ? solutions[0] : [0,0,0,0,0,0];
+  currentTool = readTool();
+  updateScene(q);
+});
+
+// ─── Load robot from file ────────────────────────────────────────────────────
+document.getElementById('load-btn').addEventListener('click', () => {
+  document.getElementById('load-file').click();
+});
+document.getElementById('load-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  file.arrayBuffer().then(buf => {
+    try {
+      const raw  = new Uint8Array(buf);
+      const data = pako.inflate(raw.slice(4));
+      const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+      const f64  = off => view.getFloat64(off, true);
+
+      const a = [], d = [], alpha = [], theta = [];
+      for (let j = 0; j < 6; j++) {
+        const base = 1624 + j * 160;
+        d.push(f64(base + 0)   / 1000);
+        a.push(f64(base + 144) / 1000);
+        alpha.push(f64(base + 136));
+        theta.push(0);
+      }
+      const lo = Array.from({length:6}, (_, j) => f64(4800 + j*8));
+      const hi = Array.from({length:6}, (_, j) => f64(4960 + j*8));
+
+      const name   = file.name.replace(/\.robot$/i, '');
+      const preset = { name, a, d, alpha, theta, lo, hi };
+
+      const opt = document.createElement('option');
+      opt.textContent = name;
+      robotSel.appendChild(opt);
+      robotSel.value = robotSel.options.length - 1;
+      ROBOTS.push(preset);
+
+      loadRobot(preset);
+    } catch(err) {
+      conLog('Failed to parse .robot file: ' + err.message, 'err');
+    }
+  });
+});
+
+// ─── Tab switching ───────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const panelId = tab.id.replace('tab-', 'panel-');
+    document.querySelectorAll('#panel-solver, #panel-analysis, #panel-about').forEach(p => p.style.display = 'none');
+    document.getElementById(panelId).style.display = '';
+  });
+});
+
+// ─── View toggles ────────────────────────────────────────────────────────────
+document.getElementById('show-frames').addEventListener('change', () => updateScene(currentQ));
+document.getElementById('show-joints').addEventListener('change', () => updateScene(currentQ));
+document.getElementById('show-bg').addEventListener('change', e => { grid.visible = e.target.checked; });
+document.getElementById('show-ee').addEventListener('change', e => {
+  _showEE = e.target.checked;
+  if (!_showEE) _clearEEPath();
+  updateScene(currentQ);
+});
+
+// ─── Tool inputs ─────────────────────────────────────────────────────────────
+document.getElementById('tool-section').addEventListener('input', () => {
+  currentTool = readTool();
+  updateScene(currentQ);
+});
+
+// ─── WASM init ───────────────────────────────────────────────────────────────
+initAnalysis(scene);
+// Show robot in 3D immediately — FK is pure JS, no WASM needed
+loadRobotFromCatalog(ROBOTS[0]);
+
+createIKDHModule().then(mod => {
+  IKDH = mod;
+  syncWASM();
+  const btn = document.getElementById('btn');
+  btn.disabled = false;
+  btn.textContent = 'Solve';
+  conLog('Module ready.', 'out');
+}).catch(e => {
+  conLog('Failed to load WASM: ' + e, 'err');
+});
+</script>
+
+<script>
+(function () {
+  const panel  = document.getElementById('con-panel');
+  const handle = document.getElementById('con-handle');
+  const log    = document.getElementById('con-log');
+  const input  = document.getElementById('con-input');
+  const COLLAPSED = 34, DEFAULT_H = 200;
+
+  let dragging = false, dragStartY = 0, dragStartH = 0, didDrag = false;
+
+  handle.addEventListener('mousedown', e => {
+    dragging = true; didDrag = false;
+    dragStartY = e.clientY; dragStartH = panel.offsetHeight;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const h = Math.max(COLLAPSED, dragStartH - (e.clientY - dragStartY));
+    if (Math.abs(e.clientY - dragStartY) > 3) didDrag = true;
+    panel.style.height = h + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging && !didDrag) {
+      panel.style.height = (panel.offsetHeight <= COLLAPSED + 2 ? DEFAULT_H : COLLAPSED) + 'px';
+    }
+    dragging = false;
+  });
+
+  const history = []; let histIdx = -1;
+
+  function _histUp() {
+    if (histIdx + 1 < history.length) { histIdx++; input.value = history[histIdx]; }
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+  function _histDown() {
+    if (histIdx > 0) { histIdx--; input.value = history[histIdx]; }
+    else { histIdx = -1; input.value = ''; }
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const cmd = input.value.trim();
+      input.value = ''; histIdx = -1;
+      if (!cmd) return;
+      history.unshift(cmd);
+      _conLine('> ' + cmd, 'cmd');
+      if (/^help$/i.test(cmd)) {
+        Help();
+      } else if (/^clear$/i.test(cmd)) {
+        log.innerHTML = '';
+      } else {
+      const moveM = cmd.match(/^(movel|movej|setspeedl|setspeedj)\s+(.+)$/i);
+      if (moveM) {
+        const fnMap = { movel: MoveL, movej: MoveJ, setspeedl: SetSpeedL, setspeedj: SetSpeedJ };
+        const fn    = fnMap[moveM[1].toLowerCase()];
+        const fargs = moveM[2].split(/[\s,;]+/).filter(Boolean).map(Number);
+        try { fn(...fargs); }
+        catch(err) { _conLine(err.message, 'err'); }
+      } else {
+        try {
+          // eslint-disable-next-line no-eval
+          const res = (0, eval)(cmd);
+          if (res !== undefined) _conLine(String(res), 'out');
+        } catch (err) { _conLine(err.message, 'err'); }
+      }
+      }
+    } else if (e.key === 'ArrowUp')   { _histUp();   e.preventDefault(); }
+      else if (e.key === 'ArrowDown') { _histDown(); e.preventDefault(); }
+  });
+
+  // Catch ArrowUp/Down globally so history works even when the 3D view has focus
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === input) return;
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    if (e.key === 'ArrowUp')        { input.focus(); _histUp();   e.preventDefault(); }
+    else if (e.key === 'ArrowDown') { input.focus(); _histDown(); e.preventDefault(); }
+  });
+
+  function _conLine(msg, cls) {
+    const now = new Date();
+    const ts = now.toTimeString().slice(0, 8);
+    const d = document.createElement('div');
+    d.className = 'cl ' + (cls || 'inf');
+    d.innerHTML = `<span class="ts">${ts}</span><span class="msg">${msg.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+    if (panel.offsetHeight <= COLLAPSED + 2) panel.style.height = DEFAULT_H + 'px';
+  }
+
+  window.conLog = function (msg, cls) { _conLine(msg, cls || 'inf'); };
+})();
+</script>
+</body>
+</html>

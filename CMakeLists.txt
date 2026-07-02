@@ -22,9 +22,10 @@ target_include_directories(hupf PUBLIC
 )
 target_compile_definitions(hupf PRIVATE LIBHUPF_EXPORTS)
 
-# Silence warnings from third-party code (GCC/Clang only)
+# Silence warnings from third-party code and enable native SIMD (GCC/Clang only)
 target_compile_options(hupf PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:
+        -march=native
         -Wno-unknown-pragmas
         -Wno-deprecated-declarations
         -Wno-parentheses
@@ -40,6 +41,9 @@ target_include_directories(ikdh
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PRIVATE src
 )
+target_compile_options(ikdh PRIVATE
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-march=native>
+)
 target_link_libraries(ikdh PRIVATE hupf)
 
 # ── Demo executable ───────────────────────────────────────────────────────────
@@ -49,21 +53,21 @@ add_executable(demo examples/cpp/demo.cpp)
 target_include_directories(demo PRIVATE include examples/cpp)
 target_link_libraries(demo PRIVATE ikdh)
 
-add_executable(gofa5_yaml examples/cpp/gofa5_yaml.cpp)
-target_include_directories(gofa5_yaml PRIVATE include)
-target_link_libraries(gofa5_yaml PRIVATE ikdh)
+add_executable(run_from_DH examples/cpp/run_from_DH.cpp)
+target_include_directories(run_from_DH PRIVATE include examples/cpp)
+target_link_libraries(run_from_DH PRIVATE ikdh)
 
-add_executable(gofa5_DH examples/cpp/gofa5_DH.cpp)
-target_include_directories(gofa5_DH PRIVATE include)
-target_link_libraries(gofa5_DH PRIVATE ikdh)
+add_executable(run_from_yaml examples/cpp/run_from_yaml.cpp)
+target_include_directories(run_from_yaml PRIVATE include examples/cpp)
+target_link_libraries(run_from_yaml PRIVATE ikdh)
 
-add_executable(poly tools/poly.cpp)
-target_include_directories(poly PRIVATE include)
-target_link_libraries(poly PRIVATE ikdh)
+add_executable(derive_poly tools/derive_poly.cpp)
+target_include_directories(derive_poly PRIVATE include)
+target_link_libraries(derive_poly PRIVATE ikdh)
 
-add_executable(benchmark tools/benchmark.cpp)
-target_include_directories(benchmark PRIVATE include)
-target_link_libraries(benchmark PRIVATE ikdh)
+add_executable(run_benchmark tools/run_benchmark.cpp)
+target_include_directories(run_benchmark PRIVATE include)
+target_link_libraries(run_benchmark PRIVATE ikdh)
 
 # ── Python bindings (optional, requires pybind11) ─────────────────────────────
 option(IKDH_BUILD_PYTHON "Build Python bindings via pybind11" OFF)

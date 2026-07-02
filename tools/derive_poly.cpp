@@ -1,7 +1,6 @@
 #include <ikdh.h>
 #include <robots.h>
 
-#include <cmath>
 #include <cstdio>
 
 static void printPoly(const char* label, const std::vector<double>& c)

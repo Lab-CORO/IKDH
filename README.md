@@ -1,132 +1,106 @@
-# IKDH — Inverse Kinematics via Denavit-Hartenberg
+# IKDH
 
-IK solver for general 6R serial robots based on the algebraic method of Husty and Pfurner.
-Returns **all solutions** within joint limits for any reachable pose.
+Is an **Inverse Kinematics** solver based on the **Denavit and Hartenberg** convention. It found **all solutions** for general six revolute joint robots based on Husty and Pfurner alogotihm [1] and [2]
 
 ---
 
-## Quick start (Python)
+## Web Interface
 
-```bash
-cmake -B build -S . && cmake --build build
+| <img src="img/joints.png" title="" alt="joints" width="236"> | <img title="" src="img/frames.png" alt="frames" width="242"> | <img src="img/manipulability.png" title="" alt="manipulability" width="236"> |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+
+Robots can be browse and download on  [RoboDK Robot Library](https://robodk.com/library). Once found add your .robot with `load` the **DH parameters** will be directly extracted from it.
+
+### Terminal Commands
+
+- cartesian motion : ``MoveL x_mm, y_mm, z_mm, roll_deg, pitch_deg, yaw_deg``
+  
+  - set cartesian speed : ``SetSpeedL mm_per_s`` (default: 100 mm/s)
+
+- joint motion : ``MoveJ J1_deg, J2_deg, J3_deg, J4_deg, J5_deg, J6_deg``
+  
+  - set joint speed : ``SetSpeedJ deg_per_s`` (default: 60 °/s)
+
+---
+
+## Library
+
+build the project
+
+```build
+cd build
 ```
+
+```build
+cmake ..
+```
+
+### Python example
 
 ```python
 import sys; sys.path.insert(0, 'build')
 import ikdh
 
-robot  = ikdh.load_robot("robots/gofa5.yaml")
+robot  = ikdh.load_robot("robots/your_robot.yaml")
 solver = ikdh.Solver(robot.dh, robot.limits)
 
-ee   = ikdh.pose_from_xyzrpw(500.0, 0.0, 500.0, 0.0, 90.0, 0.0)  # x y z mm, rx ry rz deg
+#                            x      y    z      roll pitch yaw
+ee   = ikdh.pose_from_xyzrpw(500.0, 0.0, 500.0, 0.0, 90.0, 0.0)
 sols = solver.solve(ee)   # list of (6,) numpy arrays, in degrees
 
 for q in sols:
     print(q)
 ```
 
-Pre-defined robots: `ur5e`, `gofa5`, `gofa12`, `crb15000_10`, `fanuc_crx_5ia`, `fanuc_crx_10ia`, `doosan_a0509`.
+### C++ example
+
+```cpp
+#include <ikdh.h>
+#include <robots.h>
+#include <cstdio>
+
+int main()
+{
+    auto robot = Robots::loadRobot("robots/gofa5.yaml");
+    IKDH::Solver solver(robot.dh, robot.limits);
+
+    ee = IKDH::poseFromXYZRPW(500.0, 0.0, 500.0, 0.0, 90.0, 0.0)
+    auto sols = solver.solve(ee);
+
+    for (size_t i = 0; i < sols.size(); ++i) {
+        for (double q : sols[i]) printf("%.3f ", q);
+            printf("\n");
+    }
+}
+```
 
 ---
 
-## Path planning — warm-start IK
+### How to cite
 
-For trajectory tracking, use `solve_from_seed()` instead of `solve()`.
-It refines the previous solution directly via Newton-Raphson, bypassing the algebraic solver (~100× faster).
-
-```python
-poses = interpolate(pose_A, pose_B, n=100)
-
-# Seed all branches from the first pose
-branches = [[q] for q in solver.solve(poses[0])]
-
-# Track each branch with warm-start IK
-for pose in poses[1:]:
-    for branch in branches:
-        if branch[-1] is None:
-            branch.append(None)
-            continue
-        result = solver.solve_from_seed(pose, branch[-1])
-        branch.append(result[0] if result else None)
+```latex
+@misc{axel_ikdh_2026,
+  author       = {Axel Refalo},
+  title        = {IKDH: An Inverse Kinematics Solver based Denavit and Hartenberg Convention},
+  year         = {2026},
+  publisher    = {GitHub},
+  journal      = {GitHub Repository},
+  howpublished = {\url{https://github.com/Lab-CORO/IKDH}},
+}
 ```
-
-See [`examples/python/path_planning.ipynb`](examples/python/path_planning.ipynb) for a full example with branch tracking and visualization.
 
 ---
 
-A C++ API is also available — see [`include/ikdh.h`](include/ikdh.h) and the examples in [`examples/cpp/`](examples/cpp/).
+## References
+
+[1]    M. Husty, M. Pfurner and H.-P. Schröcker. A new and efficient algorithm for the inverse kinematics of a general serial 6R manipulator, *Mech. Mach. Theory* 42: 66–81, 2007.
+
+[2]    J. Capco, M. J. C. Loquias, S. M. M. Manongsong and F. R. Nemenzo. Inverse Kinematics of Some General 6R/P Manipulators, *arXiv*:1906.07813, 2019.
 
 ---
 
-## Adding a robot
+## For claude:
 
-**From RoboDK** (robot must be open in RoboDK):
+- When there is a two parameters, for instance d and a, on the DH don't draw a line directly but do an elbow first go to d and then to a. I want the same behaviour for the add tool option? It also would be nice to have a point at the end of the tool
 
-```bash
-pip install robodk
-python3 tools/robodk_dh.py "Robot Name"
-# Saves robots/<name>.yaml automatically
-```
-
-**Manually** — create `robots/<name>.yaml`:
-
-```yaml
-name: My Robot
-dh:
-  a:     [0.0, 0.444, 0.110, 0.0, 0.080, 0.0]   # metres
-  d:     [0.265, 0.0, 0.0, 0.470, 0.0, 0.101]    # metres
-  alpha: [-pi/2, 0, -pi/2, pi/2, -pi/2, 0]        # radians
-  theta: [0, -pi/2, 0, 0, 0, pi]                  # radians (joint offsets)
-limits:
-  J1: [-180.0, 180.0]   # degrees
-  J2: [-180.0, 180.0]
-  J3: [-225.0,  85.0]
-  J4: [-180.0, 180.0]
-  J5: [-180.0, 180.0]
-  J6: [-180.0, 180.0]
-```
-
-DH convention: `T_i = Rz(θ_i + θ_offset_i) · Tz(d_i) · Tx(a_i) · Rx(α_i)`
-
----
-
-## Repository structure
-
-```
-robots/                   robot YAML files (DH + joint limits)
-include/
-  ikdh.h                  public C++ API
-  robots.h                YAML loader (no external deps)
-src/
-  ikdh.cpp                solver (HuPf core + Newton post-processing)
-  ikdh_bindings.cpp       Python bindings (pybind11)
-  hupf/                   HuPf algebraic IK core
-examples/
-  cpp/                    minimal C++ examples
-  python/
-    path_planning.ipynb   branch tracking along a Cartesian trajectory
-    singularity.py        singularity analysis
-tools/
-  robodk_dh.py            export DH from RoboDK → robots/*.yaml
-  robodk_verify.py        verify solutions against RoboDK FK
-```
-
-> Run all executables from the repository root (e.g. `./build/demo`).
-
----
-
-## Algorithm
-
-The HuPf method encodes the IK constraint as quadratic equations on Study parameters,
-reduced to a degree-16 univariate polynomial. A post-processing layer recovers solutions
-missed by the algebraic core:
-
-- **Perturbation sweep** (1°/5°/10°, 12 directions) — breaks algebraic singularities
-- **Joint flips** (J1/J4/J6 ± 180°) — explores all solution basins
-- **Newton-Raphson refinement** (damped LS, analytical Jacobian) — converges each seed to the exact pose
-- **Halton sampling** (100 quasi-random seeds, last resort) — handles robots with no real algebraic roots
-
-### References
-
-- Husty, Pfurner, Schröcker, Brunnthaler — *Algebraic methods in mechanism analysis*, Robotica **25** (2007)
-- Capco, Quam, Pfurner, Schröcker, Sinn — *Robots, computer algebra and eight connected components*, ISSAC 2021
+- In the code do you use standard DH table ? or modified DH table ? 

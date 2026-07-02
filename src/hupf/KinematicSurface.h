@@ -6,6 +6,7 @@
 #include <hupf/Hyperplane.h>
 // omp.h removed for portability - timing stubs below
 static inline double omp_get_wtime() { return 0.0; }
+#include <thread>
 
 namespace LibHUPF
 {
@@ -268,16 +269,18 @@ public:
     hyperplane=hyperplane1;
     r.resize(8);
 
-    //sequential calculation    
-    double end = 0;
-    double start = omp_get_wtime();    
+    // compute1 writes r[0,1,4,5]; compute2 writes r[2,3,6,7] — disjoint, thread-safe.
+#ifndef __EMSCRIPTEN__
+    std::thread t1(compute1, this);
+    compute2(this);
+    t1.join();
+#else
     compute1(this);
-    //jcapco todo: debug, check rank by taking random u1 and u4
-    end = omp_get_wtime();
-    times.push_back(end-start);
-    start = end;
-    compute2(this);    
-    times.push_back(omp_get_wtime()-start);
+    compute2(this);
+#endif
+
+    times.push_back(0.0);
+    times.push_back(0.0);
   }
 
   /**

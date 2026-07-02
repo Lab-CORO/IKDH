@@ -10,7 +10,7 @@ using namespace IKDH;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-static Transform numpy_to_transform(py::array_t<double, py::array::c_style | py::array::forcecast> arr)
+static Transform numpyToTransform(py::array_t<double, py::array::c_style | py::array::forcecast> arr)
 {
     if (arr.size() != 16)
         throw std::runtime_error("Expected a 4x4 matrix (16 elements)");
@@ -20,12 +20,25 @@ static Transform numpy_to_transform(py::array_t<double, py::array::c_style | py:
     return t;
 }
 
-static py::array_t<double> transform_to_numpy(const Transform& t)
+static py::array_t<double> transformToNumpy(const Transform& t)
 {
     auto arr = py::array_t<double>({4, 4});
     double* data = arr.mutable_data();
     for (int i = 0; i < 16; ++i) data[i] = t[i];
     return arr;
+}
+
+// Convert IK solutions to a Python list of (6,) numpy arrays.
+static py::list jointConfigsToList(const std::vector<JointConfig>& sols)
+{
+    py::list result;
+    for (const auto& q : sols) {
+        auto arr = py::array_t<double>(6);
+        double* data = arr.mutable_data();
+        for (int i = 0; i < 6; ++i) data[i] = q[i];
+        result.append(arr);
+    }
+    return result;
 }
 
 // ── Module ────────────────────────────────────────────────────────────────────
@@ -98,15 +111,8 @@ PYBIND11_MODULE(ikdh, m)
             [](const Solver& solver,
                py::array_t<double, py::array::c_style | py::array::forcecast> ee,
                bool expand_wraps) {
-                auto sols = solver.solve(numpy_to_transform(ee), expand_wraps);
-                py::list result;
-                for (const auto& q : sols) {
-                    auto arr = py::array_t<double>(6);
-                    double* data = arr.mutable_data();
-                    for (int i = 0; i < 6; ++i) data[i] = q[i];
-                    result.append(arr);
-                }
-                return result;
+                auto sols = solver.solve(numpyToTransform(ee), expand_wraps);
+                return jointConfigsToList(sols);
             },
             py::arg("ee"), py::arg("expand_wraps") = false,
             "Return all IK solutions for a 4x4 end-effector transform (numpy array).\n"
@@ -122,15 +128,8 @@ PYBIND11_MODULE(ikdh, m)
                 JointConfig jc;
                 const double* s = seed.data();
                 for (int i = 0; i < 6; ++i) jc[i] = s[i];
-                auto sols = solver.solveFromSeed(numpy_to_transform(ee), jc, max_iter);
-                py::list result;
-                for (const auto& q : sols) {
-                    auto arr = py::array_t<double>(6);
-                    double* data = arr.mutable_data();
-                    for (int i = 0; i < 6; ++i) data[i] = q[i];
-                    result.append(arr);
-                }
-                return result;
+                auto sols = solver.solveFromSeed(numpyToTransform(ee), jc, max_iter);
+                return jointConfigsToList(sols);
             },
             py::arg("ee"), py::arg("seed"), py::arg("max_iter") = 100,
             "Warm-start IK via damped Newton-Raphson from seed (degrees, shape (6,)).\n"
@@ -145,7 +144,7 @@ PYBIND11_MODULE(ikdh, m)
             JointConfig jc;
             const double* data = q.data();
             for (int i = 0; i < 6; ++i) jc[i] = data[i];
-            return transform_to_numpy(forwardKin(dh, jc));
+            return transformToNumpy(forwardKin(dh, jc));
         },
         py::arg("dh"), py::arg("q"),
         "Forward kinematics. q in degrees. Returns a (4, 4) numpy array.");
@@ -153,7 +152,7 @@ PYBIND11_MODULE(ikdh, m)
     m.def("pose_from_xyzrpw",
         [](double x_mm, double y_mm, double z_mm,
            double rx_deg, double ry_deg, double rz_deg) {
-            return transform_to_numpy(poseFromXYZRPW(x_mm, y_mm, z_mm, rx_deg, ry_deg, rz_deg));
+            return transformToNumpy(poseFromXYZRPW(x_mm, y_mm, z_mm, rx_deg, ry_deg, rz_deg));
         },
         py::arg("x_mm"), py::arg("y_mm"), py::arg("z_mm"),
         py::arg("rx_deg"), py::arg("ry_deg"), py::arg("rz_deg"),
@@ -162,7 +161,7 @@ PYBIND11_MODULE(ikdh, m)
     m.def("fk_error",
         [](py::array_t<double, py::array::c_style | py::array::forcecast> A,
            py::array_t<double, py::array::c_style | py::array::forcecast> B) {
-            return fkError(numpy_to_transform(A), numpy_to_transform(B));
+            return fkError(numpyToTransform(A), numpyToTransform(B));
         },
         py::arg("A"), py::arg("B"),
         "Σ(A_ij − B_ij)² over all 16 elements of two 4×4 transforms.");

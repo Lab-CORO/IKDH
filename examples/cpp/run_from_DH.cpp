@@ -1,6 +1,7 @@
 #include <ikdh.h>
+#include "example_common.h"
+
 #include <cmath>
-#include <cstdio>
 
 int main()
 {
@@ -38,15 +39,5 @@ int main()
         IKDH::poseFromXYZRPW(400.0, 0.0, 300.0, 180.0,  0.0, 0.0),
     };
 
-    for (const auto& ee : poses) {
-        auto sols = solver.solve(ee);
-
-        printf("%zu solution(s) found\n", sols.size());
-        for (size_t i = 0; i < sols.size(); ++i) {
-            printf("  [%2zu]", i);
-            for (double v : sols[i]) printf("  %7.3f", v);
-            printf("   FK err = %.1e\n", IKDH::fkError(ee, IKDH::forwardKin(dh, sols[i])));
-        }
-        printf("\n");
-    }
+    for (const auto& ee : poses) printSolutions(solver, dh, ee);
 }

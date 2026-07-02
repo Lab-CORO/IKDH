@@ -2,4 +2,8 @@
 *.ncb
 *.user
 /vs2008/libhupf_mine.vcproj
+__pycache__/
 build/
+*.robot
+*.pkl
+.DS_Store

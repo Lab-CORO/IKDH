@@ -7,6 +7,7 @@
 #include <hupf/rpoly.h>
 #include <hupf/rrr/wrist_sol.h>
 #include <hupf/poly_capture.h>
+#include <thread>
 
 //debug
 //#include <iostream>
@@ -66,12 +67,8 @@ public:
         hypMatForWristPart.p_matrix[i][j] = hyperplane.h[i][j];
       }
     }
-    //Jenkins Traub root finder --> no speedup
-    //JenkinsTraubRoot jtr;
-    //vector<Complex> wristRoots = jtr.calcRoots(Matrix::myDeterminant(hypMatForWristPart));
-
-    //calculates all roots of the determinant of hypMatForWristPart
-    vector<Complex> wristRoots = Matrix::qrCompanion(Matrix::balanceCompanionMatrix(Matrix::companionPoly(Matrix::myDeterminant(hypMatForWristPart))));
+    // Aberth-Ehrlich for the wrist-partitioned case determinant
+    vector<Complex> wristRoots = Matrix::aberthRoots(Matrix::myDeterminant(hypMatForWristPart));
 
 
     vector<double> realRoots;
@@ -359,25 +356,40 @@ public:
     double imaginaryPrecision=1e-3;
     JenkinsTraubRoot jtr;
 
-
-    //doesnt worth parallelizing (1 thread 90%, 2nd thread 10%)
-
     vector<double> realRoots;
     vector<double> wrongRealRoots;
 
-    //use companion matrix QR eigenvalue method to calculate right roots
-    //(more robust than Jenkins-Traub for clustered or nearly-degenerate roots)
-    Polynomial realPol=resultantMethod(e1,e2);
-    poly_capture_ref() = realPol.coefficient; // cache degree-56 resultant for external access
-    vector<Complex> roots = Matrix::qrCompanion(Matrix::balanceCompanionMatrix(Matrix::companionPoly(realPol)));
+    // Launch false-root polynomial in parallel — finishes ~10x faster than realPol.
+    // resultantMethod is a pure function, no shared mutable state.
+    Polynomial falsePol;
+#ifndef __EMSCRIPTEN__
+    std::thread t_false([&]() {
+      falsePol = resultantMethod(r0, r1);
+    });
+#else
+    falsePol = resultantMethod(r0, r1);
+#endif
+
+    // Main critical path: QR companion matrix on degree-56 resultant polynomial.
+    Polynomial realPol = resultantMethod(e1, e2);
+    poly_capture_ref() = realPol.coefficient;
+    vector<Complex> roots;
+    try {
+      roots = Matrix::qrCompanion(Matrix::balanceCompanionMatrix(Matrix::companionPoly(realPol)));
+    } catch (const std::exception&) {
+      roots = Matrix::aberthRoots(realPol);
+    }
 
     for(size_t i=0; i<roots.size(); i++)
     {
       if(fabs(roots[i].imaginary) < imaginaryPrecision)
         realRoots.push_back(roots[i].real);
     }
-    //use jenkins traub to calculate wrong roots
-    Polynomial falsePol=resultantMethod(r0,r1);
+
+#ifndef __EMSCRIPTEN__
+    // falsePol finishes well before realPol+QR; join is instant here.
+    t_false.join();
+#endif
     vector<Complex> wrongRoots = jtr.calcRoots(falsePol);
 
     for(size_t i=0; i<wrongRoots.size(); i++)

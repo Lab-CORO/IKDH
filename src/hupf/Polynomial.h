@@ -236,9 +236,10 @@ public:
       printf("Only polynomial with Real coefficients allowed");
       exit(EXIT_FAILURE);
     }
-    double total = 0.0;
-    for (int i = 0; i <= degree; i++)
-      total += coefficient[i] * pow(d, i);
+    if (degree < 0) return 0.0;
+    double total = coefficient[degree];
+    for (int i = degree - 1; i >= 0; i--)
+      total = total * d + coefficient[i];
     return total;
   };
 
@@ -246,14 +247,13 @@ public:
   /**
    * minus operator (Polynomial-Polynomial)
    * */
-  Polynomial& operator-(const Polynomial &b)
+  Polynomial operator-(const Polynomial &b) const
   {
     if (degree==-1 && b.degree != -1)
-      return (*(new Polynomial(negPoly(b))));
+      return negPoly(b);
     if (degree!=-1 && b.degree == -1)
       return *this;
 
-    Polynomial *res;
     int resDegree=0;
 
     if (degree >= b.degree)
@@ -261,10 +261,11 @@ public:
     else
       resDegree = b.degree;
 
+    Polynomial res;
     if (realCoeffType && b.realCoeffType)
-      res = new Polynomial(resDegree);
+      res = Polynomial(resDegree);
     else
-      res = new Polynomial(resDegree,true);
+      res = Polynomial(resDegree,true);
 
 
     if(realCoeffType && b.realCoeffType)
@@ -278,7 +279,7 @@ public:
 
         if(i<=b.degree)
           B=b.coefficient[i];
-        res->coefficient[i]=A-B;
+        res.coefficient[i]=A-B;
       }
     }
 
@@ -301,11 +302,11 @@ public:
           polB = b.polyCoefficient[i];
 
         if (polA.degree==-1 && polB.degree!=-1)
-          res->polyCoefficient[i]=negPoly(polB);
+          res.polyCoefficient[i]=negPoly(polB);
         if (degree!=-1 && b.degree == -1)
-          res->polyCoefficient[i] = polA;
+          res.polyCoefficient[i] = polA;
         if (degree!=-1 && b.degree!=-1)
-          res->polyCoefficient[i]=polA-polB;
+          res.polyCoefficient[i]=polA-polB;
       }
     }
 
@@ -324,7 +325,7 @@ public:
           helpB.degree=-1;
         else
           helpB = b.polyCoefficient[i];
-        res->polyCoefficient[i]=negPoly(helpB)+helpA;
+        res.polyCoefficient[i]=negPoly(helpB)+helpA;
       }
 
     }
@@ -345,11 +346,11 @@ public:
           helpB = 0;
         else
           helpB = b.coefficient[i];
-        res->polyCoefficient[i]=polA-helpB;
+        res.polyCoefficient[i]=polA-helpB;
       }
 
     }
-    return *res;
+    return res;
   };
 
   /**
@@ -692,28 +693,16 @@ public:
    * */
   Polynomial& operator-(double b)
   {
-    Polynomial *res;
-
     if (degree==-1)
     {
-      res=new Polynomial(-b);
+      *this = Polynomial(-b);
+      return *this;
     }
+    if (realCoeffType)
+      coefficient[0]-=b;
     else
-    {
-      if (realCoeffType)
-      {
-        res=this;
-        res->coefficient[0]-=b;
-      }
-      if (!realCoeffType)
-      {
-        res=this;
-        res->polyCoefficient[0]=polyCoefficient[0]-b;
-      }
-
-    }
-    return *res;
-
+      polyCoefficient[0]=polyCoefficient[0]-b;
+    return *this;
   };
 
   /**
