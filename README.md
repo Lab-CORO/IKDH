@@ -1,15 +1,16 @@
 # IKDH
 
-Is an **Inverse Kinematics** solver based on the **Denavit and Hartenberg** convention. It found **all solutions** for general six revolute joint robots based on Husty and Pfurner alogotihm [1] and [2]
+IKDH is an **Inverse Kinematics** solver based on the **Denavit and Hartenberg** convention. It finds **all solutions** for general six revolute joint robots based on the Husty and Pfurner algorithm [1] and [2].
 
 ---
 
 ## Web Interface
+Web Interface can be accessed [here](https://lab-coro.github.io/IKDH/web/index.html).
 
 | <img src="img/joints.png" title="" alt="joints" width="236"> | <img title="" src="img/frames.png" alt="frames" width="242"> | <img src="img/manipulability.png" title="" alt="manipulability" width="236"> |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 
-Robots can be browse and download on  [RoboDK Robot Library](https://robodk.com/library). Once found add your .robot with `load` the **DH parameters** will be directly extracted from it.
+Robots can be browsed and downloaded from the [RoboDK Robot Library](https://robodk.com/library). Once found, add your `.robot` file with `load` and the **DH parameters** will be directly extracted from it.
 
 ### Terminal Commands
 
@@ -27,12 +28,9 @@ Robots can be browse and download on  [RoboDK Robot Library](https://robodk.com/
 
 build the project
 
-```build
-cd build
-```
-
-```build
-cmake ..
+```bash
+cmake -B build -S .
+cmake --build build
 ```
 
 ### Python example
@@ -64,12 +62,12 @@ int main()
     auto robot = Robots::loadRobot("robots/gofa5.yaml");
     IKDH::Solver solver(robot.dh, robot.limits);
 
-    ee = IKDH::poseFromXYZRPW(500.0, 0.0, 500.0, 0.0, 90.0, 0.0)
+    auto ee = IKDH::poseFromXYZRPW(500.0, 0.0, 500.0, 0.0, 90.0, 0.0);
     auto sols = solver.solve(ee);
 
     for (size_t i = 0; i < sols.size(); ++i) {
         for (double q : sols[i]) printf("%.3f ", q);
-            printf("\n");
+        printf("\n");
     }
 }
 ```
@@ -96,11 +94,3 @@ int main()
 [1]    M. Husty, M. Pfurner and H.-P. Schröcker. A new and efficient algorithm for the inverse kinematics of a general serial 6R manipulator, *Mech. Mach. Theory* 42: 66–81, 2007.
 
 [2]    J. Capco, M. J. C. Loquias, S. M. M. Manongsong and F. R. Nemenzo. Inverse Kinematics of Some General 6R/P Manipulators, *arXiv*:1906.07813, 2019.
-
----
-
-## For claude:
-
-- When there is a two parameters, for instance d and a, on the DH don't draw a line directly but do an elbow first go to d and then to a. I want the same behaviour for the add tool option? It also would be nice to have a point at the end of the tool
-
-- In the code do you use standard DH table ? or modified DH table ? 
