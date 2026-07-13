@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Z (blue, diagonal — drawn first so X and Y appear on top) -->
+  <line x1="9" y1="24" x2="20" y2="12" stroke="#2196f3" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="22,10 21,15 18,11" fill="#2196f3"/>
+  <!-- X (red, horizontal) -->
+  <line x1="9" y1="24" x2="26" y2="24" stroke="#f44336" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="29,24 24,21 24,27" fill="#f44336"/>
+  <!-- Y (green, vertical) -->
+  <line x1="9" y1="24" x2="9" y2="6" stroke="#4caf50" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="9,3 6,8 12,8" fill="#4caf50"/>
+  <!-- Origin -->
+  <circle cx="9" cy="24" r="2" fill="#333"/>
+</svg>
