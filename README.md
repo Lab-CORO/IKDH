@@ -6,7 +6,7 @@ IKDH is an **Inverse Kinematics** solver based on the **Denavit and Hartenberg**
 
 ## Web Interface
 
-Web Interface can be accessed [here](https://lab-coro.github.io/IKDH/web/index.html).
+Web Interface can be accessed [here](https://lab-coro.github.io/IKDH/web/ikdh.html).
 
 | <img src="img/joints.png" title="" alt="joints" width="236"> | <img title="" src="img/frames.png" alt="frames" width="242"> | <img src="img/manipulability.png" title="" alt="manipulability" width="236"> |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
