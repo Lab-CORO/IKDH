@@ -1,7 +1,13 @@
-cmake_minimum_required(VERSION 3.14)
-project(IKDH VERSION 1.0.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.15)
+project(IKDH VERSION 1.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
+
+# Required so static libs can be linked into shared Python extension modules
+# (critical on aarch64/ARM where non-PIC code cannot be used in .so files)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+find_package(Threads REQUIRED)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -21,6 +27,7 @@ target_include_directories(hupf PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_compile_definitions(hupf PRIVATE LIBHUPF_EXPORTS)
+target_link_libraries(hupf PRIVATE Threads::Threads)
 
 # Silence warnings from third-party code and enable native SIMD (GCC/Clang only)
 target_compile_options(hupf PRIVATE
