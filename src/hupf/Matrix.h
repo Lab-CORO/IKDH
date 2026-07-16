@@ -5,7 +5,6 @@
 #pragma once
 
 #ifdef _MSC_VER
-  #define _USE_MATH_DEFINES  // enable M_PI on MSVC
   #pragma warning(push)
   #pragma warning(disable: 4996)
 #endif

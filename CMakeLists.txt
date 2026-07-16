@@ -17,6 +17,11 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
+# MSVC does not expose M_PI by default — this enables it across all targets
+if(MSVC)
+    add_compile_definitions(_USE_MATH_DEFINES)
+endif()
+
 # ── HuPf IK solver (Husty–Pfurner, integrated) ───────────────────────────────
 add_library(hupf STATIC
     src/hupf/Calculate.cpp
