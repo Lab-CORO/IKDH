@@ -5,15 +5,15 @@
 #pragma once
 
 #ifdef _MSC_VER
-  using namespace boost;
-  #pragma warning( push )
+  #define _USE_MATH_DEFINES  // enable M_PI on MSVC
+  #pragma warning(push)
   #pragma warning(disable: 4996)
-#else
-  #include <unordered_map>
 #endif
+#include <unordered_map>
 #include "Polynomial.h"
 #include "Complex.h"
 #include <complex>
+#include <cmath>
 #include <stdexcept>
 
 #if defined(JDEBUG)
