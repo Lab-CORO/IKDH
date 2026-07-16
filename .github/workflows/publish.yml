@@ -11,6 +11,7 @@ jobs:
     name: Wheels — ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-13, macos-14]
 
