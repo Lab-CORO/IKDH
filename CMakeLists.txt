@@ -97,6 +97,11 @@ if(IKDH_BUILD_PYTHON)
     target_include_directories(ikdh_py PRIVATE include)
     target_link_libraries(ikdh_py PRIVATE ikdh)
     set_target_properties(ikdh_py PROPERTIES OUTPUT_NAME ikdh)
+    # Suppress the MSVC import .lib — it collides with the static ikdh.lib
+    # Python loads .pyd files directly so no import library is needed
+    if(MSVC)
+        target_link_options(ikdh_py PRIVATE /NOIMPLIB)
+    endif()
 
     # Installed by `pip install .` (see pyproject.toml) directly into site-packages root.
     install(TARGETS ikdh_py DESTINATION .)
