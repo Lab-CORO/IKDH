@@ -8,7 +8,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Wheels — ${{ matrix.os }}
+    name: Wheels - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -33,6 +33,7 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64 aarch64
           CIBW_ARCHS_MACOS: auto   # x86_64 on macos-13, arm64 on macos-14
           CIBW_ARCHS_WINDOWS: AMD64
+          CIBW_BUILD_VERBOSITY: 1
 
       - uses: actions/upload-artifact@v4
         with:
