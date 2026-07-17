@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(IKDH VERSION 1.0.11 LANGUAGES CXX)
+project(IKDH VERSION 1.0.12 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -86,15 +86,19 @@ if(IKDH_BUILD_PYTHON)
     pybind11_add_module(ikdh_py src/ikdh_bindings.cpp)
     target_include_directories(ikdh_py PRIVATE include)
     target_link_libraries(ikdh_py PRIVATE ikdh)
-    set_target_properties(ikdh_py PROPERTIES OUTPUT_NAME ikdh)
+    set_target_properties(ikdh_py PROPERTIES OUTPUT_NAME _ikdh)
     # Suppress the MSVC import .lib — it collides with the static ikdh.lib
     # Python loads .pyd files directly so no import library is needed
     if(MSVC)
         target_link_options(ikdh_py PRIVATE /NOIMPLIB)
     endif()
 
-    # Installed by `pip install .` (see pyproject.toml) directly into site-packages root.
-    install(TARGETS ikdh_py DESTINATION .)
+    # Install extension into the ikdh package directory
+    install(TARGETS ikdh_py DESTINATION ikdh)
+    # Bundle robot YAML files so users can call load_robot("gofa5.yaml")
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/robots/
+        DESTINATION ikdh/robots
+    )
 endif()
 
 # ── Install rules ─────────────────────────────────────────────────────────────

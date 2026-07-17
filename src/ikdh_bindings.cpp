@@ -43,7 +43,7 @@ static py::list jointConfigsToList(const std::vector<JointConfig>& sols)
 
 // ── Module ────────────────────────────────────────────────────────────────────
 
-PYBIND11_MODULE(ikdh, m)
+PYBIND11_MODULE(_ikdh, m)
 {
     m.doc() = "IKDH — Inverse kinematics for 6R serial robots (HuPf algebraic method)";
 

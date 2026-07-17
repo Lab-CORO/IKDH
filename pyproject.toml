@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "ikdh"
-version = "1.0.11"
+version = "1.0.12"
 description = "Inverse kinematics for general 6R serial robots (Husty-Pfurner algebraic method)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -27,3 +27,4 @@ Repository = "https://github.com/Lab-CORO/IKDH"
 cmake.args = ["-DIKDH_BUILD_PYTHON=ON"]
 build.targets = ["ikdh_py"]
 wheel.license-files = ["LICENSE"]
+wheel.packages = ["src/ikdh"]
