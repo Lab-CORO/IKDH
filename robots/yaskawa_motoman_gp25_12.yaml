@@ -1,0 +1,23 @@
+name: Yaskawa Motoman GP25-12
+# Kinematically identical DH to robots/yaskawa_motoman_ar2010.yaml
+dh:
+  a:     [0.15, 0.76, 0.2, 0.0, 0.0, 0.0]
+  d:     [0.505, 0.0, 0.0, 1.082, 0.0, 0.1]
+  alpha: [-pi/2, 0, -pi/2, pi/2, -pi/2, 0]
+  theta: [0, -pi/2, 0, 0, 0, 0]
+limits:
+  J1: [ -180.0,   180.0]
+  J2: [ -105.0,   155.0]
+  J3: [  -86.0,   160.0]
+  J4: [ -200.0,   200.0]
+  J5: [ -150.0,   150.0]
+  J6: [ -455.0,   455.0]
+
+jacobian:
+  rows:
+    - ["-0.76*s1*s2 + 0.1*s1*s5*sin(q2 + q3)*c4 - 0.2*s1*sin(q2 + q3) - 0.1*s1*c5*cos(q2 + q3) - 1.082*s1*cos(q2 + q3) - 0.15*s1 - 0.1*s4*s5*c1", "-0.1*s5*c1*c4*cos(q2 + q3) - 0.1*sin(q2 + q3)*c1*c5 - 1.082*sin(q2 + q3)*c1 + 0.76*c1*c2 + 0.2*c1*cos(q2 + q3)", "-0.1*s5*c1*c4*cos(q2 + q3) - 0.1*sin(q2 + q3)*c1*c5 - 1.082*sin(q2 + q3)*c1 + 0.2*c1*cos(q2 + q3)", "-0.1*s1*s5*c4 + 0.1*s4*s5*sin(q2 + q3)*c1", "-0.1*s1*s4*c5 - 0.1*s5*c1*cos(q2 + q3) - 0.1*sin(q2 + q3)*c1*c4*c5", "0"]
+    - ["-0.1*s1*s4*s5 + 0.76*s2*c1 - 0.1*s5*sin(q2 + q3)*c1*c4 + 0.2*sin(q2 + q3)*c1 + 0.1*c1*c5*cos(q2 + q3) + 1.082*c1*cos(q2 + q3) + 0.15*c1", "-0.1*s1*s5*c4*cos(q2 + q3) - 0.1*s1*sin(q2 + q3)*c5 - 1.082*s1*sin(q2 + q3) + 0.76*s1*c2 + 0.2*s1*cos(q2 + q3)", "-0.1*s1*s5*c4*cos(q2 + q3) - 0.1*s1*sin(q2 + q3)*c5 - 1.082*s1*sin(q2 + q3) + 0.2*s1*cos(q2 + q3)", "0.1*s1*s4*s5*sin(q2 + q3) + 0.1*s5*c1*c4", "-0.1*s1*s5*cos(q2 + q3) - 0.1*s1*sin(q2 + q3)*c4*c5 + 0.1*s4*c1*c5", "0"]
+    - ["0", "-0.76*s2 + 0.1*s5*sin(q2 + q3)*c4 - 0.2*sin(q2 + q3) - 0.1*c5*cos(q2 + q3) - 1.082*cos(q2 + q3)", "0.1*s5*sin(q2 + q3)*c4 - 0.2*sin(q2 + q3) - 0.1*c5*cos(q2 + q3) - 1.082*cos(q2 + q3)", "0.1*s4*s5*cos(q2 + q3)", "0.1*s5*sin(q2 + q3) - 0.1*c4*c5*cos(q2 + q3)", "0"]
+    - ["0", "-s1", "-s1", "c1*cos(q2 + q3)", "-s1*c4 + s4*sin(q2 + q3)*c1", "-s1*s4*s5 - s5*sin(q2 + q3)*c1*c4 + c1*c5*cos(q2 + q3)"]
+    - ["0", "c1", "c1", "s1*cos(q2 + q3)", "s1*s4*sin(q2 + q3) + c1*c4", "-s1*s5*sin(q2 + q3)*c4 + s1*c5*cos(q2 + q3) + s4*s5*c1"]
+    - ["1", "0", "0", "-sin(q2 + q3)", "s4*cos(q2 + q3)", "-s5*c4*cos(q2 + q3) - sin(q2 + q3)*c5"]

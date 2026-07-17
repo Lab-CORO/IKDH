@@ -136,6 +136,13 @@ def compute_jacobian(a, d, alpha, theta_off):
 
     print("  Applying trigsimp...")
     J = J.applyfunc(sp.trigsimp)
+    # Rational coefficients (e.g. 177/200) print as fractions by default — StrPrinter's
+    # Mul logic splits them into numerator/denominator before _print_Rational ever runs.
+    # expand() first, since trigsimp often leaves terms over a shared denominator
+    # (a single Mul(1/D, Add(...)) rather than each term carrying its own coefficient);
+    # evalf() then turns every coefficient into a Float, so each prints as a decimal
+    # like the DH table instead of a fraction.
+    J = J.applyfunc(lambda e: sp.expand(e).evalf())
     return J
 
 

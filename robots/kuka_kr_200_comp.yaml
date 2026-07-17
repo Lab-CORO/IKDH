@@ -1,0 +1,23 @@
+name: KUKA KR 200 comp
+# Kinematically identical DH to robots/kuka_kr_140_comp.yaml
+dh:
+  a:     [0.35, 1.05, -0.045, 0.0, 0.0, 0.0]
+  d:     [0.75, 0.0, 0.0, 1.0, 0.0, 0.21]
+  alpha: [-pi/2, 0, -pi/2, pi/2, -pi/2, 0]
+  theta: [0, 0, -pi/2, 0, 0, pi]
+limits:
+  J1: [ -185.0,   185.0]
+  J2: [ -142.0,     0.0]
+  J3: [ -120.0,   148.0]
+  J4: [ -350.0,   350.0]
+  J5: [ -120.0,   120.0]
+  J6: [ -350.0,   350.0]
+
+jacobian:
+  rows:
+    - ["0.21*s1*s5*sin(q2 + q3)*c4 + 0.045*s1*sin(q2 + q3) - 1.05*s1*c2 - 0.21*s1*c5*cos(q2 + q3) - s1*cos(q2 + q3) - 0.35*s1 - 0.21*s4*s5*c1", "-1.05*s2*c1 - 0.21*s5*c1*c4*cos(q2 + q3) - 0.21*sin(q2 + q3)*c1*c5 - sin(q2 + q3)*c1 - 0.045*c1*cos(q2 + q3)", "-0.21*s5*c1*c4*cos(q2 + q3) - 0.21*sin(q2 + q3)*c1*c5 - sin(q2 + q3)*c1 - 0.045*c1*cos(q2 + q3)", "-0.21*s1*s5*c4 + 0.21*s4*s5*sin(q2 + q3)*c1", "-0.21*s1*s4*c5 - 0.21*s5*c1*cos(q2 + q3) - 0.21*sin(q2 + q3)*c1*c4*c5", "0"]
+    - ["-0.21*s1*s4*s5 - 0.21*s5*sin(q2 + q3)*c1*c4 - 0.045*sin(q2 + q3)*c1 + 1.05*c1*c2 + 0.21*c1*c5*cos(q2 + q3) + c1*cos(q2 + q3) + 0.35*c1", "-1.05*s1*s2 - 0.21*s1*s5*c4*cos(q2 + q3) - 0.21*s1*sin(q2 + q3)*c5 - s1*sin(q2 + q3) - 0.045*s1*cos(q2 + q3)", "-0.21*s1*s5*c4*cos(q2 + q3) - 0.21*s1*sin(q2 + q3)*c5 - s1*sin(q2 + q3) - 0.045*s1*cos(q2 + q3)", "0.21*s1*s4*s5*sin(q2 + q3) + 0.21*s5*c1*c4", "-0.21*s1*s5*cos(q2 + q3) - 0.21*s1*sin(q2 + q3)*c4*c5 + 0.21*s4*c1*c5", "0"]
+    - ["0", "0.21*s5*sin(q2 + q3)*c4 + 0.045*sin(q2 + q3) - 1.05*c2 - 0.21*c5*cos(q2 + q3) - cos(q2 + q3)", "0.21*s5*sin(q2 + q3)*c4 + 0.045*sin(q2 + q3) - 0.21*c5*cos(q2 + q3) - cos(q2 + q3)", "0.21*s4*s5*cos(q2 + q3)", "0.21*s5*sin(q2 + q3) - 0.21*c4*c5*cos(q2 + q3)", "0"]
+    - ["0", "-s1", "-s1", "c1*cos(q2 + q3)", "-s1*c4 + s4*sin(q2 + q3)*c1", "-s1*s4*s5 - s5*sin(q2 + q3)*c1*c4 + c1*c5*cos(q2 + q3)"]
+    - ["0", "c1", "c1", "s1*cos(q2 + q3)", "s1*s4*sin(q2 + q3) + c1*c4", "-s1*s5*sin(q2 + q3)*c4 + s1*c5*cos(q2 + q3) + s4*s5*c1"]
+    - ["1", "0", "0", "-sin(q2 + q3)", "s4*cos(q2 + q3)", "-s5*c4*cos(q2 + q3) - sin(q2 + q3)*c5"]

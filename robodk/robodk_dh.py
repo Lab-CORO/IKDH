@@ -34,6 +34,8 @@ def mat_to_m4(m):
     return [[float(m[i, j]) for j in range(4)] for i in range(4)]
 
 def fmt_m(v):
+    if abs(v) < 5e-5:  # avoid "-0.0" from float noise that rounds to zero at this precision
+        v = 0.0
     s = f"{v:.4f}".rstrip('0').rstrip('.')
     return s if '.' in s else s + '.0'
 
@@ -41,24 +43,24 @@ def yaml_list(vals):
     return "[" + ", ".join(vals) + "]"
 
 
-def main():
-    # ── Select robot ─────────────────────────────────────────────────────────
-    rdk    = Robolink()
-    robots = rdk.ItemList(ITEM_TYPE_ROBOT)
-    arg    = " ".join(sys.argv[1:]).strip()
+def slugify(name):
+    return re.sub(r'_+', '_', re.sub(r'[^a-z0-9_]', '', re.sub(r'[\s\-\./]+', '_', name.lower()))).strip('_')
 
-    if arg:
-        robot = next(r for r in robots if arg.lower() in r.Name().lower())
-    elif len(robots) == 1:
-        robot = robots[0]
-    else:
-        print("Robots:", [r.Name() for r in robots])
-        sys.exit(1)
 
+def build_yaml(robot):
+    """Extract Standard DH + joint limits from a live RoboDK robot Item and return YAML text."""
     robot_name = robot.Name()
 
+    # Joint limits (degrees)
+    lim   = robot.JointLimits()
+    lower = [float(v) for row in lim[0].rows for v in row]
+    upper = [float(v) for row in lim[1].rows for v in row]
+
     # ── Extract Modified DH from JointPoses ─────────────────────────────────
-    q0 = [0.0] * 6
+    # Evaluated at q0 rather than the all-zero pose, since some robots (asymmetric
+    # joint ranges that exclude zero) reject an all-zero configuration outright.
+    # q0 is subtracted back out of theta below, so the result is independent of it.
+    q0 = [0.0 if lo <= 0.0 <= hi else (lo + hi) / 2.0 for lo, hi in zip(lower, upper)]
 
     all_poses_raw = robot.JointPoses(q0)
     all_poses = [mat_to_m4(p) for p in all_poses_raw]
@@ -71,16 +73,11 @@ def main():
     for i in range(6):
         T     = mm4(inv4(T_prev[i]), T_cum[i])
         alpha = math.atan2(-T[1][2],  T[2][2])
-        theta = math.atan2(-T[0][1],  T[0][0])
+        theta = math.atan2(-T[0][1],  T[0][0]) - math.radians(q0[i])
         a_mm  = T[0][3]
         ca, sa = math.cos(alpha), math.sin(alpha)
         d_mm  = T[2][3] * ca - T[1][3] * sa
         dh_mod.append((theta, d_mm, a_mm, alpha))
-
-    # Joint limits (degrees)
-    lim   = robot.JointLimits()
-    lower = [float(v) for row in lim[0].rows for v in row]
-    upper = [float(v) for row in lim[1].rows for v in row]
 
     # ── Convert Modified DH → Standard DH ───────────────────────────────────
     dh_params = []
@@ -108,20 +105,37 @@ def main():
     for i in range(6):
         yaml_lines.append(f"  J{i+1}: [{lower[i]:7.1f}, {upper[i]:7.1f}]")
 
-    yaml_content = "\n".join(yaml_lines) + "\n"
+    return "\n".join(yaml_lines) + "\n"
 
-    # ── Print + save ─────────────────────────────────────────────────────────
-    print(yaml_content)
 
-    slug = re.sub(r'_+', '_', re.sub(r'[^a-z0-9_]', '', re.sub(r'[\s\-\./]+', '_', robot_name.lower()))).strip('_')
-    out_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "robots")
+def save_yaml(robot, yaml_content, out_dir=None):
+    """Write already-built YAML text to robots/<slug>.yaml (or out_dir). Returns the output path."""
+    out_dir = out_dir or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "robots")
     os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, slug + ".yaml")
+    out_path = os.path.join(out_dir, slugify(robot.Name()) + ".yaml")
 
     with open(out_path, "w") as f:
         f.write(yaml_content)
+    return out_path
 
-    print(f"Saved → {out_path}")
+
+def main():
+    # ── Select robot ─────────────────────────────────────────────────────────
+    rdk    = Robolink()
+    robots = rdk.ItemList(ITEM_TYPE_ROBOT)
+    arg    = " ".join(sys.argv[1:]).strip()
+
+    if arg:
+        robot = next(r for r in robots if arg.lower() in r.Name().lower())
+    elif len(robots) == 1:
+        robot = robots[0]
+    else:
+        print("Robots:", [r.Name() for r in robots])
+        sys.exit(1)
+
+    yaml_content = build_yaml(robot)
+    print(yaml_content)
+    print(f"Saved → {save_yaml(robot, yaml_content)}")
 
 
 if __name__ == "__main__":

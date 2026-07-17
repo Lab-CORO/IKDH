@@ -62,11 +62,12 @@ def load_robot_yaml(path):
                 section = 'dh'
             elif s.strip() == 'limits:':
                 section = 'limits'
+            elif s.strip() == 'jacobian:':
+                section = None  # ignore the symbolic jacobian block, if present
             elif section == 'dh' and '[' in s:
-                if 'a:' in s:         robot['dh']['a']     = parse_array(s)
-                elif 'd:' in s:       robot['dh']['d']     = parse_array(s)
-                elif 'alpha:' in s:   robot['dh']['alpha'] = parse_array(s)
-                elif 'theta:' in s:   robot['dh']['theta'] = parse_array(s)
+                key = s.strip().split(':', 1)[0].strip()
+                if key in ('a', 'd', 'alpha', 'theta'):
+                    robot['dh'][key] = parse_array(s)
             elif section == 'limits' and '[' in s:
                 row = parse_array(s)
                 robot['limits'].append((row[0], row[1]))
