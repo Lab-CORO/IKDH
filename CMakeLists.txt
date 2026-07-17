@@ -22,20 +22,23 @@ if(MSVC)
     add_compile_definitions(_USE_MATH_DEFINES)
 endif()
 
-# ── HuPf IK solver (Husty–Pfurner, integrated) ───────────────────────────────
-add_library(hupf STATIC
+# ── IKDH library (HuPf solver bundled in — one lib, no cross-lib boundary) ───
+add_library(ikdh STATIC
+    src/ikdh.cpp
     src/hupf/Calculate.cpp
     src/hupf/ik.cpp
 )
-target_include_directories(hupf PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+target_include_directories(ikdh
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    PRIVATE src
 )
-target_compile_definitions(hupf PUBLIC LIBHUPF_EXPORTS)
-target_link_libraries(hupf PRIVATE Threads::Threads)
-
-# Silence warnings from third-party code and enable native SIMD (GCC/Clang only)
-target_compile_options(hupf PRIVATE
+# LIBHUPF_EXPORTS is private: tells hupf headers to use dllexport (not dllimport)
+# within this compilation unit — safe and correct for a static library build
+target_compile_definitions(ikdh PRIVATE LIBHUPF_EXPORTS)
+target_link_libraries(ikdh PRIVATE Threads::Threads)
+target_compile_options(ikdh PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:
         -march=native
         -Wno-unknown-pragmas
@@ -44,19 +47,6 @@ target_compile_options(hupf PRIVATE
         -Wno-unused-function
     >
 )
-
-# ── IKDH library ──────────────────────────────────────────────────────────────
-add_library(ikdh STATIC src/ikdh.cpp)
-target_include_directories(ikdh
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    PRIVATE src
-)
-target_compile_options(ikdh PRIVATE
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-march=native>
-)
-target_link_libraries(ikdh PRIVATE hupf)
 
 # ── Demo executable ───────────────────────────────────────────────────────────
 # Run all executables from the repository root (e.g. ./build/demo),
@@ -114,7 +104,7 @@ endif()
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT SKBUILD)
 
     # Install libraries
-    install(TARGETS ikdh hupf
+    install(TARGETS ikdh
         EXPORT IKDHTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
