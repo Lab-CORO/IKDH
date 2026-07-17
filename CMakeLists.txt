@@ -31,7 +31,7 @@ target_include_directories(hupf PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_compile_definitions(hupf PRIVATE LIBHUPF_EXPORTS)
+target_compile_definitions(hupf PUBLIC LIBHUPF_EXPORTS)
 target_link_libraries(hupf PRIVATE Threads::Threads)
 
 # Silence warnings from third-party code and enable native SIMD (GCC/Clang only)
