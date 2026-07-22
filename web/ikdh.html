@@ -2392,16 +2392,24 @@ document.getElementById('tool-section').addEventListener('input', () => {
 });
 
 // ─── WASM init ───────────────────────────────────────────────────────────────
+let _wasmReady   = false;
+let _robotReady  = false;
+function _tryEnableBtn() {
+  if (!_wasmReady || !_robotReady) return;
+  const btn = document.getElementById('btn');
+  btn.disabled = false;
+  btn.textContent = 'Solve';
+}
+
 initAnalysis(scene);
 // Show robot in 3D immediately — FK is pure JS, no WASM needed
-loadRobotFromCatalog(ROBOTS[0]);
+loadRobotFromCatalog(ROBOTS[0]).then(() => { _robotReady = true; _tryEnableBtn(); });
 
 createIKDHModule().then(mod => {
   IKDH = mod;
   syncWASM();
-  const btn = document.getElementById('btn');
-  btn.disabled = false;
-  btn.textContent = 'Solve';
+  _wasmReady = true;
+  _tryEnableBtn();
   conLog('Module ready.', 'out');
 }).catch(e => {
   conLog('Failed to load WASM: ' + e, 'err');
