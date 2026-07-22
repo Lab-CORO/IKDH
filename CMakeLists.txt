@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(IKDH VERSION 1.0.13 LANGUAGES CXX)
+project(IKDH VERSION 1.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
