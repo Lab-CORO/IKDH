@@ -24,7 +24,9 @@ public:
   double d[6]; //!< link offsets
   double v[6]; //!< link half-angle tangents (for P case), todo compute!
   double alpha[6]; //!< twist angles in radians
-  double al[6]; //!< half tangent substitution value for twist angles
+  double al[6];  //!< half tangent substitution value for twist angles
+  double alp[6]; //!< sin(alpha[i]/2) — projective numerator of al[i]
+  double alq[6]; //!< cos(alpha[i]/2) — projective denominator of al[i]
   Matrix eePose; //!< end effector position matrix
   std::string path;  //!< input file path
   bool rots[6]; //if a joint is prismatice it is false, otherwise true
@@ -87,7 +89,9 @@ public:
   {
     for(int i=0; i<=5; i++)
     {
-      al[i] = tan(alpha[i]/2);
+      al[i]  = tan(alpha[i]/2);
+      alp[i] = sin(alpha[i]/2);
+      alq[i] = cos(alpha[i]/2);
     }
   };
 
@@ -222,7 +226,9 @@ public:
             for(int i=0; i<6; i++)
             {
               tmp->alpha[i]=tmp->alpha[i]*Math::deg2rad;
-              tmp->al[i]=tan(tmp->alpha[i]/2);
+              tmp->al[i] =tan(tmp->alpha[i]/2);
+              tmp->alp[i]=sin(tmp->alpha[i]/2);
+              tmp->alq[i]=cos(tmp->alpha[i]/2);
             }
           }
         }
@@ -321,7 +327,9 @@ static Input* getInput(double* a, double* d, double* theta, double* alpha, bool*
   {
     if (!(tmp->rots[i]))
       tmp->v[i]=tan(theta[i]/2);
-    tmp->al[i]=tan(tmp->alpha[i]/2);
+    tmp->al[i] =tan(tmp->alpha[i]/2);
+    tmp->alp[i]=sin(tmp->alpha[i]/2);
+    tmp->alq[i]=cos(tmp->alpha[i]/2);
   }
 
   return tmp;

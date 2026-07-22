@@ -1,4 +1,5 @@
 #pragma once
+#include <hupf/proj_eval.h>
 #include <hupf/Input.h>
 
 namespace LibHUPF
@@ -15,18 +16,18 @@ namespace LibHUPF
     double t5 = t.get(5,0);
     double t6 = t.get(6,0);
     double t7 = t.get(7,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
     double d4 = a.d[3], d6 = a.d[5];
     double a6 = a.a[5];
 
-    result.push_back(Polynomial((t0 * al6 * a6 - t1 * a6 - t2 * (al6 * d4 + al6 * d6) - t3 * (d4 + d6) + 2 * t4 + 2 * t5 * al6)));
-    result.push_back(Polynomial((t1 * al6 * a6 + t0 * a6 - t3 * (al6 * d4 + al6 * d6) + t2 * (d4 + d6) + 2 * t5 - 2 * t4 * al6)));
-    result.push_back(Polynomial((t2 * al6 * a6 + t3 * a6 + t0 * (al6 * d4 + al6 * d6) - t1 * (d4 + d6) + 2 * t6 - 2 * t7 * al6)));
-    result.push_back(Polynomial((t3 * al6 * a6 - t2 * a6 + t1 * (al6 * d4 + al6 * d6) + t0 * (d4 + d6) + 2 * t7 + 2 * t6 * al6)));
-    result.push_back(Polynomial((2 * t0 + 2 * t1 * al6)));
-    result.push_back(Polynomial((2 * t1 - 2 * t0 * al6)));
-    result.push_back(Polynomial((2 * t2 - 2 * t3 * al6)));
-    result.push_back(Polynomial((2 * t3 + 2 * t2 * al6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t0 * al6 * a6 - t1 * a6 - t2 * (al6 * d4 + al6 * d6) - t3 * (d4 + d6) + 2 * t4 + 2 * t5 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t1 * al6 * a6 + t0 * a6 - t3 * (al6 * d4 + al6 * d6) + t2 * (d4 + d6) + 2 * t5 - 2 * t4 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t2 * al6 * a6 + t3 * a6 + t0 * (al6 * d4 + al6 * d6) - t1 * (d4 + d6) + 2 * t6 - 2 * t7 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t3 * al6 * a6 - t2 * a6 + t1 * (al6 * d4 + al6 * d6) + t0 * (d4 + d6) + 2 * t7 + 2 * t6 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 + 2 * t1 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 - 2 * t0 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t2 - 2 * t3 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t3 + 2 * t2 * al6);},p6,q6)));
 
     return result;
   };
@@ -43,18 +44,18 @@ namespace LibHUPF
     double t5 = t.get(5,0);
     double t6 = t.get(6,0);
     double t7 = t.get(7,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
     double d4 = a.d[3], d6 = a.d[5];
     double a6 = a.a[5];
 
-    result.push_back(Polynomial((-t0 * a6 - t1 * al6 * a6 - t2 * (-d4 + d6) - t3 * (al6 * d4 - al6 * d6) + 2 * t4 * al6 - 2 * t5)));
-    result.push_back(Polynomial((-t1 * a6 + t0 * al6 * a6 - t3 * (-d4 + d6) + t2 * (al6 * d4 - al6 * d6) + 2 * t5 * al6 + 2 * t4)));
-    result.push_back(Polynomial((-t2 * a6 + t3 * al6 * a6 + t0 * (-d4 + d6) - t1 * (al6 * d4 - al6 * d6) + 2 * t6 * al6 + 2 * t7)));
-    result.push_back(Polynomial((-t3 * a6 - t2 * al6 * a6 + t1 * (-d4 + d6) + t0 * (al6 * d4 - al6 * d6) + 2 * t7 * al6 - 2 * t6)));
-    result.push_back(Polynomial((2 * t0 * al6 - 2 * t1)));
-    result.push_back(Polynomial((2 * t0 + 2 * t1 * al6)));
-    result.push_back(Polynomial((2 * t3 + 2 * t2 * al6)));
-    result.push_back(Polynomial((2 * t3 * al6 - 2 * t2)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-t0 * a6 - t1 * al6 * a6 - t2 * (-d4 + d6) - t3 * (al6 * d4 - al6 * d6) + 2 * t4 * al6 - 2 * t5);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-t1 * a6 + t0 * al6 * a6 - t3 * (-d4 + d6) + t2 * (al6 * d4 - al6 * d6) + 2 * t5 * al6 + 2 * t4);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-t2 * a6 + t3 * al6 * a6 + t0 * (-d4 + d6) - t1 * (al6 * d4 - al6 * d6) + 2 * t6 * al6 + 2 * t7);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-t3 * a6 - t2 * al6 * a6 + t1 * (-d4 + d6) + t0 * (al6 * d4 - al6 * d6) + 2 * t7 * al6 - 2 * t6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 * al6 - 2 * t1);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 + 2 * t1 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t3 + 2 * t2 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t3 * al6 - 2 * t2);},p6,q6)));
 
     return result;
   };
@@ -71,18 +72,18 @@ namespace LibHUPF
     double t5 = t.get(5,0);
     double t6 = t.get(6,0);
     double t7 = t.get(7,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
     double d4 = a.d[3], d6 = a.d[5];
     double a6 = a.a[5];
 
-    result.push_back(Polynomial((t0 * (al6 * d4 - al6 * d6) - t1 * (d4 - d6) - t2 * al6 * a6 - t3 * a6 - 2 * t6 + 2 * t7 * al6)));
-    result.push_back(Polynomial((t1 * (al6 * d4 - al6 * d6) + t0 * (d4 - d6) - t3 * al6 * a6 + t2 * a6 - 2 * t7 - 2 * t6 * al6)));
-    result.push_back(Polynomial((t2 * (al6 * d4 - al6 * d6) + t3 * (d4 - d6) + t0 * al6 * a6 - t1 * a6 + 2 * t4 + 2 * t5 * al6)));
-    result.push_back(Polynomial((t3 * (al6 * d4 - al6 * d6) - t2 * (d4 - d6) + t1 * al6 * a6 + t0 * a6 + 2 * t5 - 2 * t4 * al6)));
-    result.push_back(Polynomial((2 * t3 * al6 - 2 * t2)));
-    result.push_back(Polynomial((-2 * t3 - 2 * t2 * al6)));
-    result.push_back(Polynomial((2 * t0 + 2 * t1 * al6)));
-    result.push_back(Polynomial((2 * t1 - 2 * t0 * al6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t0 * (al6 * d4 - al6 * d6) - t1 * (d4 - d6) - t2 * al6 * a6 - t3 * a6 - 2 * t6 + 2 * t7 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t1 * (al6 * d4 - al6 * d6) + t0 * (d4 - d6) - t3 * al6 * a6 + t2 * a6 - 2 * t7 - 2 * t6 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t2 * (al6 * d4 - al6 * d6) + t3 * (d4 - d6) + t0 * al6 * a6 - t1 * a6 + 2 * t4 + 2 * t5 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t3 * (al6 * d4 - al6 * d6) - t2 * (d4 - d6) + t1 * al6 * a6 + t0 * a6 + 2 * t5 - 2 * t4 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t3 * al6 - 2 * t2);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-2 * t3 - 2 * t2 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 + 2 * t1 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 - 2 * t0 * al6);},p6,q6)));
 
     return result;
   };
@@ -99,18 +100,18 @@ namespace LibHUPF
     double t5 = t.get(5,0);
     double t6 = t.get(6,0);
     double t7 = t.get(7,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
     double d4 = a.d[3], d6 = a.d[5];
     double a6 = a.a[5];
 
-    result.push_back(Polynomial((t0 * (-d4 - d6) - t1 * (al6 * d4 + al6 * d6) + t2 * a6 - t3 * al6 * a6 - 2 * t6 * al6 - 2 * t7)));
-    result.push_back(Polynomial((t1 * (-d4 - d6) + t0 * (al6 * d4 + al6 * d6) + t3 * a6 + t2 * al6 * a6 - 2 * t7 * al6 + 2 * t6)));
-    result.push_back(Polynomial((t2 * (-d4 - d6) + t3 * (al6 * d4 + al6 * d6) - t0 * a6 - t1 * al6 * a6 + 2 * t4 * al6 - 2 * t5)));
-    result.push_back(Polynomial((t3 * (-d4 - d6) - t2 * (al6 * d4 + al6 * d6) - t1 * a6 + t0 * al6 * a6 + 2 * t5 * al6 + 2 * t4)));
-    result.push_back(Polynomial((-2 * t3 - 2 * t2 * al6)));
-    result.push_back(Polynomial((2 * t2 - 2 * t3 * al6)));
-    result.push_back(Polynomial((2 * t0 * al6 - 2 * t1)));
-    result.push_back(Polynomial((2 * t0 + 2 * t1 * al6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t0 * (-d4 - d6) - t1 * (al6 * d4 + al6 * d6) + t2 * a6 - t3 * al6 * a6 - 2 * t6 * al6 - 2 * t7);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t1 * (-d4 - d6) + t0 * (al6 * d4 + al6 * d6) + t3 * a6 + t2 * al6 * a6 - 2 * t7 * al6 + 2 * t6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t2 * (-d4 - d6) + t3 * (al6 * d4 + al6 * d6) - t0 * a6 - t1 * al6 * a6 + 2 * t4 * al6 - 2 * t5);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t3 * (-d4 - d6) - t2 * (al6 * d4 + al6 * d6) - t1 * a6 + t0 * al6 * a6 + 2 * t5 * al6 + 2 * t4);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-2 * t3 - 2 * t2 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t2 - 2 * t3 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 * al6 - 2 * t1);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 + 2 * t1 * al6);},p6,q6)));
 
     return result;
   };
@@ -123,12 +124,12 @@ namespace LibHUPF
     double t1 = t.get(1,0);
     double t2 = t.get(2,0);
     double t3 = t.get(3,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
 
-    result.push_back(Polynomial((2 * t0 * al6 - 2 * t1)));
-    result.push_back(Polynomial((2 * t1 * al6 + 2 * t0)));
-    result.push_back(Polynomial((2 * t2 * al6 + 2 * t3)));
-    result.push_back(Polynomial((2 * t3 * al6 - 2 * t2)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 * al6 - 2 * t1);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 * al6 + 2 * t0);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t2 * al6 + 2 * t3);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t3 * al6 - 2 * t2);},p6,q6)));
 
     return result;
   };
@@ -141,12 +142,12 @@ namespace LibHUPF
     double t1 = t.get(1,0);
     double t2 = t.get(2,0);
     double t3 = t.get(3,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
 
-    result.push_back(Polynomial((2 * t3 * al6 - 2 * t2)));
-    result.push_back(Polynomial((-2 * t3 - 2 * t2 * al6)));
-    result.push_back(Polynomial((2 * t1 * al6 + 2 * t0)));
-    result.push_back(Polynomial((2 * t1 - 2 * t0 * al6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t3 * al6 - 2 * t2);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-2 * t3 - 2 * t2 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 * al6 + 2 * t0);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 - 2 * t0 * al6);},p6,q6)));
 
     return result;
   };
@@ -163,18 +164,18 @@ namespace LibHUPF
     double t5 = t.get(5,0);
     double t6 = t.get(6,0);
     double t7 = t.get(7,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
     double d4 = a.d[3], d6 = a.d[5];
     double a6 = a.a[5];
 
-    result.push_back(Polynomial((t0 * al6 * a6 - t1 * a6 - t2 * (al6 * d4 + al6 * d6) - t3 * (d4 + d6) + 2 * t4 + 2 * t5 * al6)));
-    result.push_back(Polynomial((t1 * al6 * a6 + t0 * a6 - t3 * (al6 * d4 + al6 * d6) + t2 * (d4 + d6) + 2 * t5 - 2 * t4 * al6)));
-    result.push_back(Polynomial((t2 * al6 * a6 + t3 * a6 + t0 * (al6 * d4 + al6 * d6) - t1 * (d4 + d6) + 2 * t6 - 2 * t7 * al6)));
-    result.push_back(Polynomial((t3 * al6 * a6 - t2 * a6 + t1 * (al6 * d4 + al6 * d6) + t0 * (d4 + d6) + 2 * t7 + 2 * t6 * al6)));
-    result.push_back(Polynomial((2 * t1 * al6 + 2 * t0)));
-    result.push_back(Polynomial((2 * t1 - 2 * t0 * al6)));
-    result.push_back(Polynomial((2 * t2 - 2 * t3 * al6)));
-    result.push_back(Polynomial((2 * t2 * al6 + 2 * t3)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t0 * al6 * a6 - t1 * a6 - t2 * (al6 * d4 + al6 * d6) - t3 * (d4 + d6) + 2 * t4 + 2 * t5 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t1 * al6 * a6 + t0 * a6 - t3 * (al6 * d4 + al6 * d6) + t2 * (d4 + d6) + 2 * t5 - 2 * t4 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t2 * al6 * a6 + t3 * a6 + t0 * (al6 * d4 + al6 * d6) - t1 * (d4 + d6) + 2 * t6 - 2 * t7 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t3 * al6 * a6 - t2 * a6 + t1 * (al6 * d4 + al6 * d6) + t0 * (d4 + d6) + 2 * t7 + 2 * t6 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 * al6 + 2 * t0);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 - 2 * t0 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t2 - 2 * t3 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t2 * al6 + 2 * t3);},p6,q6)));
 
     return result;
   };
@@ -191,18 +192,18 @@ namespace LibHUPF
     double t5 = t.get(5,0);
     double t6 = t.get(6,0);
     double t7 = t.get(7,0);
-    double al6 = a.al[5];
+    double p6=a.alp[5], q6=a.alq[5];
     double d4 = a.d[3], d6 = a.d[5];
     double a6 = a.a[5];
 
-    result.push_back(Polynomial((t0 * (-d4 - d6) - t1 * (al6 * d4 + al6 * d6) + t2 * a6 - t3 * al6 * a6 - 2 * t6 * al6 - 2 * t7)));
-    result.push_back(Polynomial((t1 * (-d4 - d6) + t0 * (al6 * d4 + al6 * d6) + t3 * a6 + t2 * al6 * a6 - 2 * t7 * al6 + 2 * t6)));
-    result.push_back(Polynomial((t2 * (-d4 - d6) + t3 * (al6 * d4 + al6 * d6) - t0 * a6 - t1 * al6 * a6 + 2 * t4 * al6 - 2 * t5)));
-    result.push_back(Polynomial((t3 * (-d4 - d6) - t2 * (al6 * d4 + al6 * d6) - t1 * a6 + t0 * al6 * a6 + 2 * t5 * al6 + 2 * t4)));
-    result.push_back(Polynomial((-2 * t3 - 2 * t2 * al6)));
-    result.push_back(Polynomial((2 * t2 - 2 * t3 * al6)));
-    result.push_back(Polynomial((2 * t0 * al6 - 2 * t1)));
-    result.push_back(Polynomial((2 * t1 * al6 + 2 * t0)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t0 * (-d4 - d6) - t1 * (al6 * d4 + al6 * d6) + t2 * a6 - t3 * al6 * a6 - 2 * t6 * al6 - 2 * t7);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t1 * (-d4 - d6) + t0 * (al6 * d4 + al6 * d6) + t3 * a6 + t2 * al6 * a6 - 2 * t7 * al6 + 2 * t6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t2 * (-d4 - d6) + t3 * (al6 * d4 + al6 * d6) - t0 * a6 - t1 * al6 * a6 + 2 * t4 * al6 - 2 * t5);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (t3 * (-d4 - d6) - t2 * (al6 * d4 + al6 * d6) - t1 * a6 + t0 * al6 * a6 + 2 * t5 * al6 + 2 * t4);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (-2 * t3 - 2 * t2 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t2 - 2 * t3 * al6);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t0 * al6 - 2 * t1);},p6,q6)));
+    result.push_back(Polynomial(proj_eval_1([&](double al6){return (2 * t1 * al6 + 2 * t0);},p6,q6)));
 
     return result;
   };  
