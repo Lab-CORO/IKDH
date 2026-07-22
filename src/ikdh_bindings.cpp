@@ -8,7 +8,7 @@
 namespace py = pybind11;
 using namespace IKDH;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// Helpers
 
 static Transform numpyToTransform(py::array_t<double, py::array::c_style | py::array::forcecast> arr)
 {
@@ -41,13 +41,13 @@ static py::list jointConfigsToList(const std::vector<JointConfig>& sols)
     return result;
 }
 
-// ── Module ────────────────────────────────────────────────────────────────────
+// Module
 
 PYBIND11_MODULE(_ikdh, m)
 {
-    m.doc() = "IKDH — Inverse kinematics for 6R serial robots (HuPf algebraic method)";
+    m.doc() = "IKDH  -  Inverse kinematics for 6R serial robots (HuPf algebraic method)";
 
-    // ── DHTable ───────────────────────────────────────────────────────────────
+    // DHTable
     py::class_<DHTable>(m, "DHTable")
         .def(py::init<>())
         .def(py::init([](std::vector<double> a, std::vector<double> d,
@@ -85,7 +85,7 @@ PYBIND11_MODULE(_ikdh, m)
             return std::string(buf);
         });
 
-    // ── JointLimits ───────────────────────────────────────────────────────────
+    // JointLimits
     py::class_<JointLimits>(m, "JointLimits")
         .def(py::init<>(), "Default: ±180° for all joints.")
         .def(py::init([](std::vector<std::pair<double,double>> pairs) {
@@ -102,7 +102,7 @@ PYBIND11_MODULE(_ikdh, m)
             [](const JointLimits& jl) { return std::vector<double>(jl.hi, jl.hi + 6); },
             [](JointLimits& jl, std::vector<double> v) { for (int i=0;i<6;++i) jl.hi[i]=v[i]; });
 
-    // ── Solver ────────────────────────────────────────────────────────────────
+    // Solver
     py::class_<Solver>(m, "Solver")
         .def(py::init<const DHTable&, const JointLimits&>(),
              py::arg("dh"), py::arg("limits") = JointLimits{},
@@ -134,9 +134,9 @@ PYBIND11_MODULE(_ikdh, m)
             py::arg("ee"), py::arg("seed"), py::arg("max_iter") = 100,
             "Warm-start IK via damped Newton-Raphson from seed (degrees, shape (6,)).\n"
             "Returns a list with one (6,) solution if Newton converges within limits,\n"
-            "otherwise an empty list. ~100x faster than solve() — use for path planning.");
+            "otherwise an empty list. ~100x faster than solve()  -  use for path planning.");
 
-    // ── Free functions ────────────────────────────────────────────────────────
+    // Free functions
     m.def("forward_kin",
         [](const DHTable& dh, py::array_t<double, py::array::c_style | py::array::forcecast> q) {
             if (q.size() != 6)
@@ -166,7 +166,7 @@ PYBIND11_MODULE(_ikdh, m)
         py::arg("A"), py::arg("B"),
         "Σ(A_ij − B_ij)² over all 16 elements of two 4×4 transforms.");
 
-    // ── Robot loader ──────────────────────────────────────────────────────────
+    // Robot loader
     py::class_<Robots::Robot>(m, "Robot")
         .def_readonly("name",   &Robots::Robot::name)
         .def_readonly("dh",     &Robots::Robot::dh)

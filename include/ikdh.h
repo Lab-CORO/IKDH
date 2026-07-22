@@ -38,7 +38,7 @@ using Transform   = std::array<double, 16>;
 // Joint configuration: degrees (revolute) or metres (prismatic).
 using JointConfig = std::array<double, 6>;
 
-// IK solver — construct once per robot; thread-safe per instance.
+// IK solver  -  construct once per robot; thread-safe per instance.
 class Solver {
 public:
     explicit Solver(const DHTable& dh, const JointLimits& limits = JointLimits{});

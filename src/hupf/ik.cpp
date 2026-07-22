@@ -10,7 +10,6 @@ namespace LibHUPF
 
   ik_solver::ik_solver(const string& ik_file)
   {
-    //jcapco todo: refactor: create input without file
     _input = Input::parseFile(ik_file);
   }
 

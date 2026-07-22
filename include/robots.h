@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-// Minimal YAML robot loader — no external dependencies.
+// Minimal YAML robot loader  -  no external dependencies.
 // Expected format: robots/<name>.yaml  (see robots/ directory for examples)
 
 namespace Robots {

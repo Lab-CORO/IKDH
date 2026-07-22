@@ -13,7 +13,7 @@
 #  define ROBOTS_DIR "robots"
 #endif
 
-// ── Directory listing ─────────────────────────────────────────────────────────
+// Directory listing
 #if defined(_WIN32)
 #  include <windows.h>
 static std::vector<std::string> listYaml(const std::string& dir)
@@ -47,7 +47,7 @@ static std::vector<std::string> listYaml(const std::string& dir)
 }
 #endif
 
-// ── Diverse joint configurations used as FK seeds ────────────────────────────
+// Diverse joint configurations used as FK seeds
 // Angles are scaled to [-1, 1] and mapped to each robot's actual joint limits,
 // so the poses are always reachable regardless of the robot's range of motion.
 static const double SEEDS[][6] = {
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    printf("IKDH benchmark — %d poses × %d solves each\n\n", N_SEEDS, REPS);
+    printf("IKDH benchmark  -  %d poses × %d solves each\n\n", N_SEEDS, REPS);
     printf("  %-32s  %9s  %9s  %9s  %7s\n",
            "Robot", "avg ms", "min ms", "max ms", "avg sol");
     printf("  %s\n", std::string(66, '-').c_str());

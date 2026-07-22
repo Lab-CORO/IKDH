@@ -269,7 +269,7 @@ public:
     hyperplane=hyperplane1;
     r.resize(8);
 
-    // compute1 writes r[0,1,4,5]; compute2 writes r[2,3,6,7] — disjoint, thread-safe.
+    // compute1 writes r[0,1,4,5]; compute2 writes r[2,3,6,7]  -  disjoint, thread-safe.
 #ifndef __EMSCRIPTEN__
     std::thread t1(compute1, this);
     compute2(this);

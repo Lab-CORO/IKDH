@@ -84,9 +84,7 @@ result.push_back(Polynomial(proj_eval_3([&](double l1,double l2,double l3){retur
  return result;
  };
 
-//jcapco todo above: investigate where sign change becomes relevant in the C code!
-
-// jcapco Hyperplanes Tv1: 
+// Hyperplanes Tv1: 
 
 std::vector<Polynomial> h1_tc_v1 (Input& a)
 {

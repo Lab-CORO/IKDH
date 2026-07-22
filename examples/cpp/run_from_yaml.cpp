@@ -8,11 +8,11 @@
 
 int main()
 {
-    // ── Load robot from YAML ──────────────────────────────────────────────────
+    // Load robot from YAML
     auto robot = Robots::loadRobot(ROBOTS_DIR "/gofa5.yaml");
     IKDH::Solver solver(robot.dh, robot.limits);
 
-    // ── Solve IK for two end-effector poses ───────────────────────────────────
+    // Solve IK for two end-effector poses
     // poseFromXYZRPW: x y z in mm, rx ry rz in degrees (RoboDK convention Rz*Ry*Rx)
     IKDH::Transform poses[] = {
         IKDH::poseFromXYZRPW(200.0, 0.0, 600.0,   0.0, 90.0, 0.0),

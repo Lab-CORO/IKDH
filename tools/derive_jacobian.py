@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-derive_jacobian.py — Compute the symbolic geometric Jacobian for a 6R robot
+derive_jacobian.py  -  Compute the symbolic geometric Jacobian for a 6R robot
 from a DH YAML file and write the result back to the same file.
 
 Usage (from the repository root):
@@ -37,7 +37,7 @@ except ImportError:
     sys.exit(1)
 
 
-# ── Custom printer: rationals and floats as compact decimals ──────────────────
+# Custom printer: rationals and floats as compact decimals
 
 class _CompactPrinter(StrPrinter):
     def _print_Rational(self, expr):
@@ -52,7 +52,7 @@ class _CompactPrinter(StrPrinter):
 _printer = _CompactPrinter()
 
 
-# ── DH YAML parser (mirrors robots.h, handles pi expressions) ─────────────────
+# DH YAML parser (mirrors robots.h, handles pi expressions)
 
 def _parse_pi_expr(s):
     s = s.strip()
@@ -93,7 +93,7 @@ def _load_dh(yaml_path):
     return a, d, alpha, theta
 
 
-# ── Symbolic DH matrix ────────────────────────────────────────────────────────
+# Symbolic DH matrix
 
 def _dh_matrix(a, d, alpha, q_sym, theta_off):
     """4×4 symbolic DH transform: Rz(q+offset) * Tz(d) * Tx(a) * Rx(alpha)."""
@@ -108,7 +108,7 @@ def _dh_matrix(a, d, alpha, q_sym, theta_off):
     ])
 
 
-# ── Geometric Jacobian computation ────────────────────────────────────────────
+# Geometric Jacobian computation
 
 def compute_jacobian(a, d, alpha, theta_off):
     """
@@ -136,7 +136,7 @@ def compute_jacobian(a, d, alpha, theta_off):
 
     print("  Applying trigsimp...")
     J = J.applyfunc(sp.trigsimp)
-    # Rational coefficients (e.g. 177/200) print as fractions by default — StrPrinter's
+    # Rational coefficients (e.g. 177/200) print as fractions by default  -  StrPrinter's
     # Mul logic splits them into numerator/denominator before _print_Rational ever runs.
     # expand() first, since trigsimp often leaves terms over a shared denominator
     # (a single Mul(1/D, Add(...)) rather than each term carrying its own coefficient);
@@ -146,7 +146,7 @@ def compute_jacobian(a, d, alpha, theta_off):
     return J
 
 
-# ── Expression → compact string  (s1,c1 … s6,c6 notation) ───────────────────
+# Expression → compact string (s1,c1 … s6,c6 notation)
 
 def _to_str(expr):
     s = _printer.doprint(expr)
@@ -156,7 +156,7 @@ def _to_str(expr):
     return s
 
 
-# ── YAML update ───────────────────────────────────────────────────────────────
+# YAML update
 
 def _remove_existing_jacobian(content):
     """Strip any existing 'jacobian:' block from the file content."""
@@ -199,7 +199,7 @@ def write_jacobian(yaml_path, J):
     print(f"  Written to {yaml_path}")
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# Main
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:

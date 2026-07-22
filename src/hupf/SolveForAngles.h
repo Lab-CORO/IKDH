@@ -9,9 +9,6 @@
 #include <hupf/poly_capture.h>
 #include <thread>
 
-//debug
-//#include <iostream>
-
 namespace LibHUPF
 {
 
@@ -36,9 +33,7 @@ public:
 
     if(hyperplane.manifoldsUsed[0]<1 || hyperplane.manifoldsUsed[1]<1)
 	  {
-      //cout << "first manifold: " << hyperplane.manifoldsUsed[0] << endl;
-      //cout << "second manifold: " << hyperplane.manifoldsUsed[1] << endl;
-      result = solveForSpecialCase(hyperplane, kin); //hopefully our RP case does not end up here
+      result = solveForSpecialCase(hyperplane, kin);
     }
     else
     {
@@ -178,14 +173,11 @@ public:
   static vector<vector<double> > solveForGeneralCase(Hyperplane &hyperplane, KinematicSurface &kin)
   {
     vector<vector<double> > finalSolution;
-    //study quadric equation
-    //instead try to use hyperplane rather than kin.. (this will allow solving for situation when we are in a kinsing.)
     Polynomial e1 = kin.r[0] * kin.r[4]
                     + kin.r[1] * kin.r[5]
                     + kin.r[2] * kin.r[6]
                     + kin.r[3] * kin.r[7];
 
-    //last hyperplane h8
     Polynomial e2 = ((hyperplane.h[7])[0]) * kin.r[0] +
                     ((hyperplane.h[7])[1]) * kin.r[1] +
                     ((hyperplane.h[7])[2]) * kin.r[2] +
@@ -195,10 +187,8 @@ public:
                     ((hyperplane.h[7])[6]) * kin.r[6] +
                     ((hyperplane.h[7])[7]) * kin.r[7];
 
-    //jcapco todo: we can make some nice shortcuts if the desired value is prismatic value (not half-tangent from rotational joint)
     vector<pair<double,double> > realRoots = calculateRoots(e1,e2,kin.r[0],kin.r[1]);
     int numberofSolutions = int(realRoots.size());
-    //cout << "Number of dSolutions: " << numberofSolutions << endl;
 
     vector<vector<double> > final_v = findAllAngles(realRoots, hyperplane, kin);
     for(int i=0; i<numberofSolutions; i++)
@@ -210,7 +200,6 @@ public:
       }
     }
 
-    //checkSolutions with forwardKinematics
     double fwdPrecision = 1e-3;
     for(int i=0; i<numberofSolutions; i++)
     {
@@ -241,9 +230,8 @@ public:
   {
     int numberOfSolutions = int(va.size());
     vector<vector<double> > final_v;
-    int lo[3] = {0,0,0}; //l_order
-    
-    //order of solving depending on the manifold used
+    int lo[3] = {0,0,0};
+
     switch (hyperplane.manifoldsUsed[0])
     {
     case 1: 
@@ -263,25 +251,20 @@ public:
     }
     else if (hyperplane.left_3r == RRR_)
     {
-      //todo: add namespace to RRR
       hplanes[0]=LibHUPF::h1_tc_v1;
       hplanes[1]=LibHUPF::h1_tc_v2;
       hplanes[2]=LibHUPF::h1_tc_v3;
     }
     
-    //jcapco now: correct hyperplanes for RRP
-    //no parallelisation potential --> doesnt worth
     for(int i=0; i<numberOfSolutions; i++)
     {
       vector<double> tmp;
       final_v.push_back(tmp);
       vector<double> rValue = kin.substituteValues(va[i].first, va[i].second);
 
-      //we can use the RRR hyperplanes in RRP computations!
-      if(hyperplane.left_3r==RRP_ && hyperplane.manifoldsUsed[0]==3) 
+      if(hyperplane.left_3r==RRP_ && hyperplane.manifoldsUsed[0]==3)
       {
         hyperplane.a.d[2]=va[i].first;
-        //cout << "Testing solved d3: " << va[i].first << endl;
       }
       
       double vsol[3] ={0,0,0};
@@ -300,7 +283,6 @@ public:
       for (size_t j=0;j<3;++j)
         final_v[i].push_back(vsol[j]);
 
-      //for v4, in thesis this is 1/v4
       if(hyperplane.manifoldsUsed[1]==4)
         final_v[i].push_back(va[i].second);
       else
@@ -313,7 +295,6 @@ public:
       }
       (final_v[i])[3] = 1/(final_v[i])[3];
 
-      //for v5, this is v5' in HUPF thesis and is replaced by v5'=-v5
       if(hyperplane.manifoldsUsed[1]==5)
         final_v[i].push_back(va[i].second);
       else
@@ -326,7 +307,6 @@ public:
       }
       (final_v[i])[4] = -(final_v[i])[4];
 
-      //for v6, in thesis this is 1/v6
       if(hyperplane.manifoldsUsed[1]==6)
         final_v[i].push_back(va[i].second);
       else
@@ -359,7 +339,7 @@ public:
     vector<double> realRoots;
     vector<double> wrongRealRoots;
 
-    // Launch false-root polynomial in parallel — finishes ~10x faster than realPol.
+    // Launch false-root polynomial in parallel  -  finishes ~10x faster than realPol.
     // resultantMethod is a pure function, no shared mutable state.
     Polynomial falsePol;
 #ifndef __EMSCRIPTEN__
@@ -398,7 +378,6 @@ public:
         wrongRealRoots.push_back(wrongRoots[i].real);
     }
 
-    //remove wrong roots
     for(size_t i=0; i<wrongRealRoots.size(); i++)
     {
       size_t j=0;
@@ -416,12 +395,10 @@ public:
     for(size_t i=0; i<realRoots.size(); i++)
     {
       Polynomial newE1 = e1.subs(realRoots[i]);
-      vector<Complex> rootsE1 = jtr.calcRoots(newE1);//Matrix::qrCompanion(Matrix::balanceCompanionMatrix(Matrix::companionPoly(newE1)));
-      //printf("%d ", rootsE1.size());
+      vector<Complex> rootsE1 = jtr.calcRoots(newE1);
 
       Polynomial newE2 = e2.subs(realRoots[i]);
-      vector<Complex> rootsE2 = jtr.calcRoots(newE2); //Matrix::qrCompanion(Matrix::balanceCompanionMatrix(Matrix::companionPoly(newE2)));
-      //printf("%d ", rootsE2.size());
+      vector<Complex> rootsE2 = jtr.calcRoots(newE2);
 
       for(size_t j=0; j<rootsE1.size(); j++)
         if(fabs(rootsE1[j].imaginary) < imaginaryPrecision)

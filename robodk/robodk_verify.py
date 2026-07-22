@@ -28,7 +28,7 @@ except ImportError:
     print("robodk package not found. Install it with:  pip install robodk")
     sys.exit(1)
 
-# ── Load robot YAML ───────────────────────────────────────────────────────────
+# Load robot YAML
 
 def parse_pi_expr(s):
     s = s.strip()
@@ -73,7 +73,7 @@ def load_robot_yaml(path):
                 robot['limits'].append((row[0], row[1]))
     return robot
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# Helpers
 
 def wrap_angle(angle, lo, hi):
     """Map angle into [lo, hi] by ±360 steps. Returns None if impossible."""
@@ -92,7 +92,7 @@ def pos_xyz(mat):
 
 
 def main():
-    # ── Configuration ────────────────────────────────────────────────────────
+    # Configuration
     yaml_file = sys.argv[1] if len(sys.argv) > 1 else "robots/gofa5.yaml"
     robot_cfg = load_robot_yaml(yaml_file)
 
@@ -102,7 +102,7 @@ def main():
     interval     = 2                        # seconds between solutions
     demo_bin     = sys.argv[3] if len(sys.argv) > 3 else 'build/demo'
 
-    # ── 1. Parse solutions from demo binary ─────────────────────────────────
+    # 1. Parse solutions from demo binary
     proc   = subprocess.run([demo_bin], capture_output=True, text=True)
     output = proc.stdout
 
@@ -136,14 +136,14 @@ def main():
 
     print(f"{len(solutions_raw)} raw solution(s), {len(solutions)} within joint limits.\n")
 
-    # ── 2. Connect to RoboDK ─────────────────────────────────────────────────
+    # 2. Connect to RoboDK
     rdk   = Robolink()
     robot = rdk.Item(robot_rdk, ITEM_TYPE_ROBOT)
     if not robot.Valid():
         print(f"Robot '{robot_rdk}' not found in RoboDK.")
         sys.exit(1)
 
-    # ── 3. Reference FK from RoboDK ──────────────────────────────────────────
+    # 3. Reference FK from RoboDK
     ref_joints  = solutions[0][0] if solutions else None
     pose_ref    = robot.SolveFK(ref_joints) if ref_joints else None
     xr, yr, zr  = pos_xyz(pose_ref) if pose_ref else (None, None, None)
@@ -151,7 +151,7 @@ def main():
     print(f"{'Sol':>4}  {'joint angles (deg)':^54}  {'FK err (internal)':>18}  {'delta pos RoboDK':>16}")
     print("-" * 104)
 
-    # ── 4. Display each solution ─────────────────────────────────────────────
+    # 4. Display each solution
     for i, (angles, err) in enumerate(solutions):
         robot.setJoints(angles)
 

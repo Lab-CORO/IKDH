@@ -69,7 +69,7 @@ inline double proj_eval_222(F f,
             for (int k = 0; k <= 2; ++k)
                 g[i][j][k] = f(i - 1.0, j - 1.0, k - 1.0);
 
-    // Step 2: project over al6 (degree 2) — cleared by q6^2
+    // Step 2: project over al6 (degree 2)  -  cleared by q6^2
     double h[3][3];
     for (int i = 0; i <= 2; ++i)
         for (int j = 0; j <= 2; ++j) {
@@ -79,7 +79,7 @@ inline double proj_eval_222(F f,
             h[i][j] = C0*(q6*q6) + C1*(p6*q6) + C2*(p6*p6);
         }
 
-    // Step 3: project over al5 (degree 2) — cleared by q5^2
+    // Step 3: project over al5 (degree 2)  -  cleared by q5^2
     double k[3];
     for (int i = 0; i <= 2; ++i) {
         double C0 = h[i][1];
@@ -88,7 +88,7 @@ inline double proj_eval_222(F f,
         k[i] = C0*(q5*q5) + C1*(p5*q5) + C2*(p5*p5);
     }
 
-    // Step 4: project over al4 (degree 2) — cleared by q4^2
+    // Step 4: project over al4 (degree 2)  -  cleared by q4^2
     double C0 = k[1];
     double C1 = (k[2] - k[0]) * 0.5;
     double C2 = (k[2] + k[0]) * 0.5 - k[1];

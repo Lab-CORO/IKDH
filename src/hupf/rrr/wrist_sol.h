@@ -78,7 +78,7 @@ namespace LibHUPF
     double p5=a.alp[4], q5=a.alq[4];
     double p6=a.alp[5], q6=a.alq[5];
 
-    // v6 (argument) is the computed joint variable — captured by [&] inside lambdas.
+    // v6 (argument) is the computed joint variable  -  captured by [&] inside lambdas.
     // Both numer and denom are scaled by the same factor q4^2*q5^2*q6^2, which cancels.
     double proj_numer = proj_eval_222([&](double al4, double al5, double al6){
       return -((-4 * me1 * e0 + 4 * me0 * e1 + 4 * me3 * e2 - 4 * me2 * e3 - 4 * al6 * me0 * e0 - 4 * al6 * me1 * e1 - 4 * al6 * me2 * e2 - 4 * al6 * me3 * e3) * (2 * me1 * e2 - 2 * me0 * e3 + 2 * me3 * e0 - 2 * me2 * e1 + 2 * al6 * me2 * e0 + 2 * al6 * me3 * e1 - 2 * al6 * me0 * e2 - 2 * al6 * me1 * e3) * al5 - 2 * al5 * (2 * me0 * e0 + 2 * me1 * e1 + 2 * me2 * e2 + 2 * me3 * e3 + 2 * al6 * me0 * e1 - 2 * al6 * me1 * e0 - 2 * al6 * me2 * e3 + 2 * al6 * me3 * e2) * (2 * me2 * e0 + 2 * me3 * e1 - 2 * me0 * e2 - 2 * me1 * e3 + 2 * al6 * me0 * e3 - 2 * al6 * me1 * e2 + 2 * al6 * me2 * e1 - 2 * al6 * me3 * e0) - (4 * me1 * e0 - 4 * me0 * e1 - 4 * me3 * e2 + 4 * me2 * e3 + 4 * al6 * me0 * e0 + 4 * al6 * me1 * e1 + 4 * al6 * me2 * e2 + 4 * al6 * me3 * e3) * al4 * al4 * al5 * (2 * me1 * e2 - 2 * me0 * e3 + 2 * me3 * e0 - 2 * me2 * e1 + 2 * al6 * me2 * e0 + 2 * al6 * me3 * e1 - 2 * al6 * me0 * e2 - 2 * al6 * me1 * e3) - 2 * al4 * al4 * al5 * (2 * me0 * e0 + 2 * me1 * e1 + 2 * me2 * e2 + 2 * me3 * e3 + 2 * al6 * me0 * e1 - 2 * al6 * me1 * e0 - 2 * al6 * me2 * e3 + 2 * al6 * me3 * e2) * (2 * me2 * e0 + 2 * me3 * e1 - 2 * me0 * e2 - 2 * me1 * e3 + 2 * al6 * me0 * e3 - 2 * al6 * me1 * e2 + 2 * al6 * me2 * e1 - 2 * al6 * me3 * e0)

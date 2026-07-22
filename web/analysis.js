@@ -1,9 +1,9 @@
 'use strict';
 
-// ─── Module state ─────────────────────────────────────────────────────────────
+// Module state
 let _frames      = null;   // last FK frames (7 × Float64Array 16)
 let _Jspatial    = null;   // spatial (base-frame) Jacobian 6×6
-let _transData   = null;   // { sigmas, vecs } from spatial J — used for 3D ellipsoid
+let _transData   = null;   // { sigmas, vecs } from spatial J  -  used for 3D ellipsoid
 let _rotData     = null;
 let _showTransEl  = false;
 let _showTransVec = false;
@@ -11,7 +11,7 @@ let _showRotEl    = false;
 let _showRotVec   = false;
 let _ellGroup    = null;   // THREE.Group added to scene
 
-// ─── Init (call once after scene is ready) ───────────────────────────────────
+// Init (call once after scene is ready)
 function initAnalysis(threeScene) {
   _ellGroup = new THREE.Group();
   threeScene.add(_ellGroup);
@@ -28,7 +28,7 @@ function clearAnalysisState() {
   _rebuildScene();
 }
 
-// ─── Linear algebra ──────────────────────────────────────────────────────────
+// Linear algebra
 function cross3(a, b) {
   return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
 }
@@ -99,7 +99,7 @@ function _det6(J) {
   return s * A.reduce((d, r, i) => d * r[i], 1);
 }
 
-// ─── DOM helpers ─────────────────────────────────────────────────────────────
+// DOM helpers
 function _renderJacobianTable(J) {
   const rl = ['v<sub>x</sub>','v<sub>y</sub>','v<sub>z</sub>','ω<sub>x</sub>','ω<sub>y</sub>','ω<sub>z</sub>'];
   const cols = ['J1','J2','J3','J4','J5','J6'];
@@ -155,7 +155,7 @@ function _syncCheckboxes() {
   if (rv) rv.checked = _showRotVec;
 }
 
-// ─── Three.js objects ────────────────────────────────────────────────────────
+// Three.js objects
 function _makeEllipsoid(data, pos, color, visualRadius) {
   const {sigmas, vecs} = data;
   const maxS = Math.max(...sigmas, 1e-9);
@@ -217,10 +217,7 @@ function _rebuildScene() {
   if (_showRotVec   && _rotData)   _ellGroup.add(_makeAxisArrows(_rotData,   pos, 0xab47bc, r * 0.6));
 }
 
-// Keep old name as alias so any stray internal call still works
-const _rebuildEllipsoids = _rebuildScene;
-
-// ─── Public entry points ─────────────────────────────────────────────────────
+// Public entry points
 function computeAndDisplayJacobian(q_deg) {
   if (!currentDH) return;
   _frames   = forwardKin(currentDH, q_deg);

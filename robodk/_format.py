@@ -1,5 +1,5 @@
 """
-_format.py — Shared radian formatting for RoboDK <-> YAML conversion scripts.
+_format.py  -  Shared radian formatting for RoboDK <-> YAML conversion scripts.
 
 Not a public API; imported directly by sibling scripts run as
 `python3 robodk/<script>.py`.
@@ -8,7 +8,7 @@ Not a public API; imported directly by sibling scripts run as
 import math
 
 # (value, canonical string) pairs, restricted to the "pi", "pi/N" forms that
-# include/robots.h's parsePiExpr() can read back — no "N*pi/D" multiples.
+# include/robots.h's parsePiExpr() can read back  -  no "N*pi/D" multiples.
 # Angles are folded to their (-pi, pi] representative (e.g. 3*pi/2 -> -pi/2)
 # rather than spelled out with a numerator, since they're equivalent rotations.
 _PI_FRACS = [

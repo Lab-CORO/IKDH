@@ -7,7 +7,7 @@ int main()
 {
     const double pi = M_PI;
 
-    // ── ABB GoFa CRB 15000-5 — DH parameters ─────────────────────────────────
+    // ABB GoFa CRB 15000-5 - DH parameters
     //        Joint:        1          2          3          4          5          6
     IKDH::DHTable dh;
     dh.a    [0] = 0.000; dh.a    [1] = 0.444; dh.a    [2] = 0.110;
@@ -20,7 +20,7 @@ int main()
     dh.theta[3] = 0;     dh.theta[4] = 0;     dh.theta[5] = pi;   // radians (offsets)
     for (int i = 0; i < 6; ++i) dh.revolute[i] = true;
 
-    // ── Joint limits (degrees) ────────────────────────────────────────────────
+    // Joint limits (degrees)
     IKDH::JointLimits limits({
         {-180,  180},   // J1
         {-180,  180},   // J2
@@ -32,7 +32,7 @@ int main()
 
     IKDH::Solver solver(dh, limits);
 
-    // ── Solve IK for two end-effector poses ───────────────────────────────────
+    // Solve IK for two end-effector poses
     // poseFromXYZRPW: x y z in mm, rx ry rz in degrees (RoboDK convention Rz*Ry*Rx)
     IKDH::Transform poses[] = {
         IKDH::poseFromXYZRPW(200.0, 0.0, 600.0,   0.0, 90.0, 0.0),

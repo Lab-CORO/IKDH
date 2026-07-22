@@ -16,7 +16,6 @@ namespace Math
 
 namespace LibHUPF
 {
-//#define PI 3.1415926535897932384626433
 class Input
 {
 public:
@@ -25,8 +24,8 @@ public:
   double v[6]; //!< link half-angle tangents (for P case), todo compute!
   double alpha[6]; //!< twist angles in radians
   double al[6];  //!< half tangent substitution value for twist angles
-  double alp[6]; //!< sin(alpha[i]/2) — projective numerator of al[i]
-  double alq[6]; //!< cos(alpha[i]/2) — projective denominator of al[i]
+  double alp[6]; //!< sin(alpha[i]/2)  -  projective numerator of al[i]
+  double alq[6]; //!< cos(alpha[i]/2)  -  projective denominator of al[i]
   Matrix eePose; //!< end effector position matrix
   std::string path;  //!< input file path
   bool rots[6]; //if a joint is prismatice it is false, otherwise true
@@ -77,9 +76,7 @@ public:
       eePose_Study.set(6,0,(-eePose.get(2,0)*eePose_Study.get(0,0)-eePose.get(3,0)*eePose_Study.get(1,0)+eePose.get(1,0)*eePose_Study.get(3,0))/2);
       eePose_Study.set(7,0,(-eePose.get(3,0)*eePose_Study.get(0,0)+eePose.get(2,0)*eePose_Study.get(1,0)-eePose.get(1,0)*eePose_Study.get(2,0))/2);
     }
-    //jcapco now: normalize
     return eePose_Study*(0.5/Matrix::FrobeniusNorm(eePose_Study));
-    //return eePose_Study;
   };
 
   /**

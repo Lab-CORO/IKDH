@@ -1,5 +1,5 @@
 """
-_common.py — Shared setup and printing helpers for the examples in this directory.
+_common.py  -  Shared setup and printing helpers for the examples in this directory.
 
 Not a public API; imported directly by sibling scripts run as
 `python3 examples/python/<script>.py`.

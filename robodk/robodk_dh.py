@@ -5,7 +5,7 @@ Usage:
     python robodk/robodk_dh.py [robot_name]
 
 Output:
-    robots/<slug>.yaml   — created/overwritten automatically
+    robots/<slug>.yaml    -  created/overwritten automatically
     Also prints the YAML to stdout.
 """
 
@@ -18,7 +18,7 @@ from robodk.robolink import ITEM_TYPE_ROBOT, Robolink
 
 from _format import fmt_angle
 
-# ── Matrix helpers ─────────────────────────────────────────────────────────────
+# Matrix helpers
 
 def mm4(A, B):
     return [[sum(A[i][k]*B[k][j] for k in range(4)) for j in range(4)] for i in range(4)]
@@ -56,7 +56,7 @@ def build_yaml(robot):
     lower = [float(v) for row in lim[0].rows for v in row]
     upper = [float(v) for row in lim[1].rows for v in row]
 
-    # ── Extract Modified DH from JointPoses ─────────────────────────────────
+    # Extract Modified DH from JointPoses
     # Evaluated at q0 rather than the all-zero pose, since some robots (asymmetric
     # joint ranges that exclude zero) reject an all-zero configuration outright.
     # q0 is subtracted back out of theta below, so the result is independent of it.
@@ -79,7 +79,7 @@ def build_yaml(robot):
         d_mm  = T[2][3] * ca - T[1][3] * sa
         dh_mod.append((theta, d_mm, a_mm, alpha))
 
-    # ── Convert Modified DH → Standard DH ───────────────────────────────────
+    # Convert Modified DH → Standard DH
     dh_params = []
     for i in range(6):
         theta, d_mm, _, _ = dh_mod[i]
@@ -87,7 +87,7 @@ def build_yaml(robot):
         alpha_s = dh_mod[i + 1][3]        if i < 5 else 0.0
         dh_params.append((theta, d_mm * 1e-3, a_s, alpha_s))
 
-    # ── Build YAML ───────────────────────────────────────────────────────────
+    # Build YAML
     a_vals     = [fmt_m    (p[2]) for p in dh_params]
     d_vals     = [fmt_m    (p[1]) for p in dh_params]
     alpha_vals = [fmt_angle(p[3]) for p in dh_params]
@@ -120,7 +120,7 @@ def save_yaml(robot, yaml_content, out_dir=None):
 
 
 def main():
-    # ── Select robot ─────────────────────────────────────────────────────────
+    # Select robot
     rdk    = Robolink()
     robots = rdk.ItemList(ITEM_TYPE_ROBOT)
     arg    = " ".join(sys.argv[1:]).strip()

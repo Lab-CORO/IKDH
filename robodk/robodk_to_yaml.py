@@ -1,5 +1,5 @@
 """
-robodk_to_yaml.py — Converts a RoboDK .robot binary file to an IKDH-compatible .yaml file.
+robodk_to_yaml.py  -  Converts a RoboDK .robot binary file to an IKDH-compatible .yaml file.
 
 Binary layout (reverse-engineered from UR5e.robot):
   Header  : 4 bytes, uint32 big-endian = decompressed size
@@ -24,7 +24,7 @@ import zlib
 from _format import fmt_angle
 
 
-# ── Binary layout constants ───────────────────────────────────────────────────
+# Binary layout constants
 HEADER_SIZE = 4
 N_JOINTS    = 6
 JOINT_BLOCK = 160
@@ -34,7 +34,7 @@ FIELD_ALPHA = 136
 FIELD_A     = 144
 LIMITS_LO   = 4800   # 6 × float64, degrees
 LIMITS_HI   = 4960   # 6 × float64, degrees
-# ─────────────────────────────────────────────────────────────────────────────
+#
 
 
 def load_robot_file(path):
@@ -76,7 +76,7 @@ def _fmt_float(v):
 
 
 def save_yaml(path, name, dh, lo, hi):
-    # d and a are in mm in the binary — convert to metres for IKDH.
+    # d and a are in mm in the binary  -  convert to metres for IKDH.
     # Note: sign conventions may differ per manufacturer; verify after conversion.
     lines = []
     lines.append(f"name: {name}")

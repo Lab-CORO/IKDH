@@ -6,7 +6,7 @@
 
 namespace IKDH {
 
-// ── Internal helpers ──────────────────────────────────────────────────────────
+// Internal helpers
 
 // Wrap angle (degrees) into [lo, hi] by adding/subtracting multiples of 360°.
 // Returns false if the angle cannot be mapped into the interval.
@@ -153,7 +153,7 @@ static bool refineIK(const DHTable& dh, const JointLimits& limits,
 
     for (int iter = 0; iter < maxIter; ++iter) {
 
-        // ── FK with intermediate transforms ───────────────────────────────────
+        // FK with intermediate transforms
         // T_accum[j] = cumulative transform up to (but not including) joint j,
         // i.e. the pose of frame j-1 in base coordinates.
         //   T_accum[0] = I        (base frame, provides rotation axis for joint 0)
@@ -184,7 +184,7 @@ static bool refineIK(const DHTable& dh, const JointLimits& limits,
             }
         if (fe < tol * tol) return true;
 
-        // ── Analytical geometric Jacobian J (12×6) ────────────────────────────
+        // Analytical geometric Jacobian J (12×6)
         // For revolute joint j rotating about z_{j-1} (column 2 of T_accum[j]):
         //
         //   z_j  = T_accum[j] col-2 = [T2, T6, T10]
@@ -266,7 +266,7 @@ static bool refineIK(const DHTable& dh, const JointLimits& limits,
     return false;
 }
 
-// ── Solver ────────────────────────────────────────────────────────────────────
+// Solver
 
 Solver::Solver(const DHTable& dh, const JointLimits& limits)
     : _limits(limits), _dh(dh)
@@ -297,11 +297,11 @@ std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) c
     double flat[16];
     for (int i = 0; i < 16; ++i) flat[i] = ee[i];
 
-    // ── Algebraic solve ───────────────────────────────────────────────────────
+    // Algebraic solve
     auto raw = iks->solve(flat);
     LibHUPF::primary_poly_ref() = LibHUPF::poly_capture_ref();
 
-    // ── Build unified seed pool ───────────────────────────────────────────────
+    // Build unified seed pool
     // Seeds come from two sources, all fed into a single Newton pass:
     //   1. Primary algebraic roots + 8 J1/J4/J6 flip variants each
     //   2. Halton quasi-random seeds covering the joint-space cube
@@ -343,7 +343,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) c
         seeds.push_back(q);
     }
 
-    // ── Single Newton pass over all seeds ─────────────────────────────────────
+    // Single Newton pass over all seeds
     std::vector<JointConfig> result;
     for (auto q : seeds) {
         if (result.size() >= 16) break;
@@ -353,7 +353,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) c
         if (!isDuplicate(result, qw)) result.push_back(qw);
     }
 
-    // ── Flip expansion on found solutions ─────────────────────────────────────
+    // Flip expansion on found solutions
     // A second cheap pass: flip each found solution by +180° on every joint and
     // re-run Newton.  Catches solution branches adjacent in configuration space
     // to the ones already found, at negligible extra cost.
@@ -373,7 +373,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) c
             }
     }
 
-    // ── Wrap expansion (optional) ─────────────────────────────────────────────
+    // Wrap expansion (optional)
     // For each solution, generate all equivalent representations obtained by
     // shifting individual joints by ±k*360° while staying within limits.
     // Useful for motion planners that treat angle + 360° as a distinct waypoint.
@@ -431,7 +431,7 @@ std::vector<double> Solver::lastPolynomial() const
     return LibHUPF::primary_poly_ref();
 }
 
-// ── Forward kinematics ────────────────────────────────────────────────────────
+// Forward kinematics
 
 Transform forwardKin(const DHTable& dh, const JointConfig& q)
 {

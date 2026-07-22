@@ -5,10 +5,7 @@
 #pragma once
 
 #include <vector>
-//#include <iostream>
-//#if defined(_WIN32) || defined(_WIN64)
-#include<math.h>
-//#endif
+#include <math.h>
 
 namespace LibHUPF{
 
@@ -243,7 +240,6 @@ public:
     return total;
   };
 
-//todo: remove the operators from class method
   /**
    * minus operator (Polynomial-Polynomial)
    * */
@@ -884,19 +880,6 @@ public:
         }
       }
 
-      /* //we want division also with remainder.. we take only polynomial quotient
-      for (int i = 0; i < degB; i++) // All these are remainder elements.
-      {
-        //cout << "i: " << i << endl;
-        if (a1.coefficient[i] != 0)  //TODO: Replace with tolerance checking.
-        {        
-          //cout << "a1.coeff[i]: " << a1.coefficient[i] << endl;
-          perror("Not Completely Divisible");
-          exit(EXIT_FAILURE);
-        }
-      }
-      */
-
       if (wasNormalized)
         result = result/b.coefficient[degB];
 
@@ -924,12 +907,6 @@ public:
 
   };
 
-  /**
-   * print polynomial coefficients.
-   * only for testing and debugging purposes.
-   * @param p polynomial
-   * @param offset start at coefficient n
-   * */
   static void printPolynomial(Polynomial p, int offset)
   {
     for (int i=0; i<offset; i++)
@@ -976,12 +953,6 @@ public:
       }
     }
   }
-  /**
-   * equals operator (Polynomial==Polynomial)
-   * only for testing and debugging purposes
-   * @param b polynomial
-   * @return true if this polynomial equals polynomial b, otherwise false is returned
-   * */
   bool operator==(const Polynomial &b) const
   {
     if(degree!=b.degree || realCoeffType!=b.realCoeffType)

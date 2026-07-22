@@ -17,12 +17,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-# MSVC does not expose M_PI by default — this enables it across all targets
+# MSVC does not expose M_PI by default  -  this enables it across all targets
 if(MSVC)
     add_compile_definitions(_USE_MATH_DEFINES)
 endif()
 
-# ── IKDH library (HuPf solver bundled in — one lib, no cross-lib boundary) ───
+# IKDH library (HuPf solver bundled in - one lib, no cross-lib boundary)
 add_library(ikdh STATIC
     src/ikdh.cpp
     src/hupf/Calculate.cpp
@@ -35,7 +35,7 @@ target_include_directories(ikdh
     PRIVATE src
 )
 # LIBHUPF_EXPORTS is private: tells hupf headers to use dllexport (not dllimport)
-# within this compilation unit — safe and correct for a static library build
+# within this compilation unit  -  safe and correct for a static library build
 target_compile_definitions(ikdh PRIVATE LIBHUPF_EXPORTS)
 target_link_libraries(ikdh PRIVATE Threads::Threads)
 target_compile_options(ikdh PRIVATE
@@ -48,7 +48,7 @@ target_compile_options(ikdh PRIVATE
     >
 )
 
-# ── Demo executable ───────────────────────────────────────────────────────────
+# Demo executable
 # Run all executables from the repository root (e.g. ./build/demo),
 # so that relative paths like "robots/gofa5.yaml" resolve correctly.
 add_executable(demo examples/cpp/demo.cpp)
@@ -71,7 +71,7 @@ add_executable(run_benchmark tools/run_benchmark.cpp)
 target_include_directories(run_benchmark PRIVATE include)
 target_link_libraries(run_benchmark PRIVATE ikdh)
 
-# ── Python bindings (optional, requires pybind11) ─────────────────────────────
+# Python bindings (optional, requires pybind11)
 option(IKDH_BUILD_PYTHON "Build Python bindings via pybind11" OFF)
 
 if(IKDH_BUILD_PYTHON)
@@ -87,7 +87,7 @@ if(IKDH_BUILD_PYTHON)
     target_include_directories(ikdh_py PRIVATE include)
     target_link_libraries(ikdh_py PRIVATE ikdh)
     set_target_properties(ikdh_py PROPERTIES OUTPUT_NAME _ikdh)
-    # Suppress the MSVC import .lib — it collides with the static ikdh.lib
+    # Suppress the MSVC import .lib  -  it collides with the static ikdh.lib
     # Python loads .pyd files directly so no import library is needed
     if(MSVC)
         target_link_options(ikdh_py PRIVATE /NOIMPLIB)
@@ -101,9 +101,9 @@ if(IKDH_BUILD_PYTHON)
     )
 endif()
 
-# ── Install rules ─────────────────────────────────────────────────────────────
+# Install rules
 # Only add install rules when this is the top-level project (not a subdirectory),
-# and not when building the Python wheel (SKBUILD, set by scikit-build-core) —
+# and not when building the Python wheel (SKBUILD, set by scikit-build-core)  - 
 # the wheel should contain only the compiled extension, not C++ dev artifacts.
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT SKBUILD)
 

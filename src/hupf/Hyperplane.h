@@ -16,7 +16,7 @@ namespace LibHUPF
 {
 
 static double EPSILON=1e-6;
-using namespace std; //jcapco todo: temporary
+using namespace std;
 
 enum ThreeChain
 {
@@ -49,7 +49,6 @@ public:
     manifoldsUsed[0] = 0;
     manifoldsUsed[1] = 0;
 
-    //jcapco todo: this could be 9 (tcp) or 10 (tcw)
     left_3r = 0; right_3r =0;
     for (size_t i=0; i<3;++i)
     {
@@ -61,7 +60,6 @@ public:
     //PRP=0+2+0=2..etc. 8 possibilities!
     if (left_3r == RRR_) //RRR
     {
-      //jcapco todo: convert everything to simplified form following the sequence 
       if (fabs(a.alpha[0])<EPSILON && fabs(a.alpha[1])<EPSILON) //RRR spherical special case
       {
     		manifoldsUsed[0]=0;    

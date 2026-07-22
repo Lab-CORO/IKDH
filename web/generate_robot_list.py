@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate_robot_list.py — Regenerate the ROBOTS catalog array embedded in
+generate_robot_list.py  -  Regenerate the ROBOTS catalog array embedded in
 web/ikdh.html from every file in robots/*.yaml.
 
 Each entry's display name is taken verbatim from that file's `name:` field

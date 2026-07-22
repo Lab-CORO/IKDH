@@ -692,7 +692,7 @@ public:
     // polynomial.  Aberth can leave roots with |Im| slightly above the 1e-3
     // acceptance threshold when they should be real.
     for (int k = 0; k < n; k++) {
-      if (std::abs(z[k].imag()) > 0.1) continue;  // clearly complex — skip
+      if (std::abs(z[k].imag()) > 0.1) continue;  // clearly complex  -  skip
       double x = z[k].real();
       bool converged = false;
       for (int it = 0; it < 30; it++) {
@@ -919,7 +919,6 @@ public:
         double a1, a2, a3;
 
         z = a.m_matrix[m - 1][m - 1];
-        // TODO: FMAT shift less 1
         r = x - z;
         s = y - z;
         p = a.m_matrix[m - 1][m] + (r * s - w) / a.m_matrix[m][m - 1];
@@ -962,7 +961,7 @@ public:
           x = fabs(p) + fabs(q) + fabs(r);
 
           if (x == 0)
-            continue;           /* FIXME????? */
+            continue;
 
           p /= x;
           q /= x;

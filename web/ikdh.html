@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IKDH — Inverse Kinematics Demo</title>
+<title>IKDH  -  Inverse Kinematics Demo</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
 *, *::before, *::after { box-sizing: border-box; }
@@ -11,7 +11,7 @@ html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, san
 
 #app { display: grid; grid-template-columns: 460px 1fr; height: 100vh; }
 
-/* ── Left panel ─────────────────────────────────────────────── */
+/* Left panel */
 #left { overflow-y: scroll; padding: 20px 16px; border-right: 1px solid #e0e0e0; }
 h1 { font-size: 1.6rem; margin: 0 0 4px; text-align: center; }
 .sub { font-size: 0.72rem; color: #111; margin: 0 0 20px; text-align: center; white-space: nowrap; }
@@ -124,12 +124,12 @@ table.jac tr:nth-child(odd) td { background: #fafafa; }
 .ell-check input[type="checkbox"] { cursor: pointer; }
 #cb-ell-t, #cb-vec-t, #cb-ell-r, #cb-vec-r { accent-color: #1a73e8; }
 
-/* ── Right panel ────────────────────────────────────────────── */
+/* Right panel */
 #right { position: relative; background: #f0f0f0; }
 canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
 #hint { position: absolute; bottom: 10px; right: 12px; font-size: 0.68rem; color: #aaa; pointer-events: none; }
 
-/* ── Console ─────────────────────────────────────────────────── */
+/* Console */
 #con-panel { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; background: #fff; font-family: system-ui, -apple-system, sans-serif; font-size: 0.71rem; z-index: 100; display: flex; flex-direction: column; border-top: 1px solid #e0e0e0; }
 #con-handle { height: 34px; min-height: 34px; display: flex; align-items: center; padding: 0 12px; cursor: ns-resize; user-select: none; }
 #con-handle span { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #666; }
@@ -150,7 +150,7 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
 <body>
 <div id="app">
 
-<!-- ════ LEFT PANEL ════════════════════════════════════════════ -->
+<!-- LEFT PANEL -->
 <div id="left">
   <h1 style="display:flex;align-items:flex-end;justify-content:center;gap:4px">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="26" height="26" style="transform:scaleX(-1);flex-shrink:0">
@@ -278,11 +278,11 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
   </div>
 
   <div id="panel-about" style="display:none">
-    <p>IKDH is an <strong>Inverse Kinematics</strong> solver based on the <strong>Denavit–Hartenberg</strong> convention that enables finding <strong>all</strong> configurations for a given end-effector pose.</p>
+    <p>IKDH is an <strong>Inverse Kinematics</strong> solver based on the <strong>Denavit-Hartenberg</strong> convention that enables finding <strong>all</strong> configurations for a given end-effector pose.</p>
     <p>The library has been developed at the <strong>CoRo Lab</strong> by <strong>Axel Refalo</strong> to support kinematic analysis through the <strong>web interface</strong> as well as fast computation in <strong>Python</strong> and <strong>C++</strong>. It is strongly based on the <strong>HuPf</strong> algorithm [1] and [2].</p>
     <p>To use the web interface you can <code>load</code> a <code>.robot</code> file from the <a href="https://robodk.com/library" target="_blank">RoboDK Robot Library</a> or select an already available morphology. When a robot is loaded or selected, its Jacobian and joint limits are printed in the terminal.<br>You can then add a tool with <code>add</code>, find all IK solutions with <code>solve</code>, and further analyse proximity to singularities with the translation and orientation manipulability ellipsoids.</p>
     <p>Terminal commands also enable Cartesian and joint motion. See the <code>help</code> command for the full list.</p>
-    <p class="about-refs">[1] M. Husty, M. Pfurner and H.-P. Schröcker. A new and efficient algorithm for the inverse kinematics of a general serial 6R manipulator, <em>Mech. Mach. Theory</em> 42: 66–81, 2007.</p>
+    <p class="about-refs">[1] M. Husty, M. Pfurner and H.-P. Schröcker. A new and efficient algorithm for the inverse kinematics of a general serial 6R manipulator, <em>Mech. Mach. Theory</em> 42: 66-81, 2007.</p>
     <img src="../img/CoRo.jpg" alt="CoRo Lab" style="max-height:60px;width:auto;max-width:50%;display:block;margin:12px auto 12px;">
     <div class="about-btns">
       <a class="about-btn about-btn-contribute" href="https://github.com/Lab-CORO/IKDH" target="_blank">Contribute</a>
@@ -291,7 +291,7 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
   </div>
 </div>
 
-<!-- ════ RIGHT PANEL ═══════════════════════════════════════════ -->
+<!-- RIGHT PANEL -->
 <div id="right">
   <canvas id="cv"></canvas>
   <div id="hint">drag to orbit · scroll to zoom</div>
@@ -319,8 +319,8 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
 
-// ─── Robot presets  (a/d metres · alpha/theta radians · lo/hi degrees) ───────
-// ─── Robot catalog (name + YAML path relative to ../robots/) ─────────────────
+// Robot presets (a/d metres · alpha/theta radians · lo/hi degrees)
+// Robot catalog (name + YAML path relative to ../robots/)
 // Serve from repo root: python3 -m http.server 8787  →  open /web/ikdh.html
 const ROBOTS_BASE = '../robots/';
 const ROBOTS = [
@@ -1505,7 +1505,7 @@ const ROBOTS = [
 ];
 ROBOTS.sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true}));
 
-// ─── YAML parser — extracts DH, limits and Jacobian from .yaml text ──────────
+// YAML parser - extracts DH, limits and Jacobian from .yaml text
 function _piExpr(s) {
   s = s.trim();
   if (!s || s === '0') return 0;
@@ -1549,7 +1549,7 @@ function parseRobotYaml(text, displayName) {
            jac: jacRows.length === 6 ? jacRows : null };
 }
 
-// ─── Async robot loader with cache ───────────────────────────────────────────
+// Async robot loader with cache
 const _robotCache = {};
 async function loadRobotFromCatalog(entry) {
   if (!_robotCache[entry.yaml]) {
@@ -1565,8 +1565,8 @@ async function loadRobotFromCatalog(entry) {
   loadRobot(_robotCache[entry.yaml]);
 }
 
-// ─── State ───────────────────────────────────────────────────────────────────
-let currentDH      = null;   // {a,d,alpha,theta,lo,hi} — internal units
+// State
+let currentDH      = null;   // {a,d,alpha,theta,lo,hi}  -  internal units
 let currentJacRows = null;   // symbolic Jacobian rows from YAML
 let currentQ       = [0,0,0,0,0,0];
 let robotReach     = 0.3;    // fixed per robot, computed at load time
@@ -1579,7 +1579,7 @@ let _showEE        = false;  // end-effector frame + path enabled
 let _eePathPoints  = [];     // THREE.Vector3 waypoints
 let _eePathLine    = null;   // THREE.Line in scene (not robotGroup)
 
-// ─── Build DH table rows ─────────────────────────────────────────────────────
+// Build DH table rows
 const dhBody = document.getElementById('dh-body');
 for (let i = 0; i < 6; i++) {
   const tr = document.createElement('tr');
@@ -1612,7 +1612,7 @@ function readTableToDH() {
   return dh;
 }
 
-// ─── Robot selector ──────────────────────────────────────────────────────────
+// Robot selector
 const robotSel = document.getElementById('robot-sel');
 ROBOTS.forEach((r, i) => {
   const o = document.createElement('option');
@@ -1629,7 +1629,7 @@ dhBody.addEventListener('input', () => {
   clearResults();
 });
 
-// ─── Numerical Jacobian — geometric, from DH FK ──────────────────────────────
+// Numerical Jacobian - geometric, from DH FK
 function numericalJacobian(dh, q_rad) {
   const q_deg = q_rad.map(v => v * R2D);
   const frames = forwardKin(dh, q_deg);
@@ -1650,7 +1650,7 @@ function numericalJacobian(dh, q_rad) {
   return J;
 }
 
-// ─── FK — mirrors the C++ dhMatrix / forwardKin exactly ──────────────────────
+// FK - mirrors the C++ dhMatrix / forwardKin exactly
 function mul4(A, B) {
   const C = new Float64Array(16);
   for (let r = 0; r < 4; r++)
@@ -1686,7 +1686,7 @@ function forwardKin(dh, q_deg) {
   return frames;
 }
 
-// ─── Tool math ───────────────────────────────────────────────────────────────
+// Tool math
 // Build 4×4 rigid transform from XYZ (mm) + intrinsic ZYX rotation (deg)
 function poseFromXYZRPW_JS(x_mm, y_mm, z_mm, rx_deg, ry_deg, rz_deg) {
   const rx = rx_deg*D2R, ry = ry_deg*D2R, rz = rz_deg*D2R;
@@ -1745,7 +1745,7 @@ function readTool() {
   return poseFromXYZRPW_JS(x, y, z, rx, ry, rz);
 }
 
-// ─── Three.js scene ──────────────────────────────────────────────────────────
+// Three.js scene
 const canvas   = document.getElementById('cv');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -1831,7 +1831,7 @@ function makeTube(p0, p1, radius, mat) {
   return mesh;
 }
 
-// ─── End-effector path helpers ───────────────────────────────────────────────
+// End-effector path helpers
 function _clearEEPath() {
   _eePathPoints = [];
   if (_eePathLine) { scene.remove(_eePathLine); _eePathLine = null; }
@@ -1861,7 +1861,7 @@ function updateScene(q_deg) {
 
   const axLen = robotReach * 0.12;
 
-  // ── RGB axis triads ────────────────────────────────────────────
+  // RGB axis triads
   if (showFrames) {
     const headL = axLen * 0.28, headW = axLen * 0.18;
     for (let i = 0; i < frames.length; i++) {
@@ -1872,7 +1872,7 @@ function updateScene(q_deg) {
     }
   }
 
-  // ── Link tubes — two segments per link: d along z, then a along x ─────────
+  // Link tubes - two segments per link: d along z, then a along x
   const linkMat = new THREE.MeshPhongMaterial({ color: 0x222222 });
   const linkR = axLen * 0.026;
   for (let i = 1; i < frames.length; i++) {
@@ -1888,7 +1888,7 @@ function updateScene(q_deg) {
     if (t2) robotGroup.add(t2);
   }
 
-  // ── Joint cylinders (revolute joints 1-6 at frames[0..5]) ─────
+  // Joint cylinders (revolute joints 1-6 at frames[0..5])
   if (showJoints) {
     const jR   = robotReach * 0.028;
     const jH   = robotReach * 0.09;
@@ -1910,7 +1910,7 @@ function updateScene(q_deg) {
     }
   }
 
-  // ── Flange dot ─────────────────────────────────────────────────
+  // Flange dot
   {
     const dotR    = axLen * 0.07;
     const dotMesh = new THREE.Mesh(
@@ -1921,7 +1921,7 @@ function updateScene(q_deg) {
     robotGroup.add(dotMesh);
   }
 
-  // ── End-effector frame ────────────────────────────────────────────────────────
+  // End-effector frame
   if (_showEE) {
     const headL = axLen * 0.28, headW = axLen * 0.18;
     // Show tool frame if tool is active, otherwise flange frame
@@ -1934,7 +1934,7 @@ function updateScene(q_deg) {
     }
   }
 
-  // ── Tool frame ─────────────────────────────────────────────────
+  // Tool frame
   if (currentTool) {
     const toolMat  = mul4(frames[6], currentTool);
     const { o: tO, x: tX, y: tY, z: tZ } = frameVecs(toolMat);
@@ -1974,7 +1974,7 @@ function updateScene(q_deg) {
   }
 }
 
-// Reposition camera to frame the robot — only called on robot change
+// Reposition camera to frame the robot  -  only called on robot change
 function fitCamera(frames) {
   // Use the maximum reach from origin as the characteristic robot size
   let reach = 0.3;
@@ -2001,11 +2001,11 @@ onResize();
 
 (function loop() { requestAnimationFrame(loop); orbit.update(); renderer.render(scene, camera); })();
 
-// ─── Speed setters ───────────────────────────────────────────────────────────
+// Speed setters
 function SetSpeedL(v) { _speedL = Math.max(1, +v || _speedL); conLog(`Linear speed: ${_speedL} mm/s`, 'out'); }
 function SetSpeedJ(v) { _speedJ = Math.max(1, +v || _speedJ); conLog(`Joint speed:  ${_speedJ} °/s`,  'out'); }
 
-// ─── Help ─────────────────────────────────────────────────────────────────────
+// Help
 function Help() {
   const cmds = [
     ['MoveL x, y, z, rx, ry, rz',    'Cartesian linear motion  (mm, deg)'],
@@ -2021,7 +2021,7 @@ function Help() {
   conLog(' ', 'inf');
 }
 
-// ─── 6×6 Gauss-Jordan inverse — returns null when singular ───────────────────
+// 6×6 Gauss-Jordan inverse - returns null when singular
 function _inv6(J) {
   const n = 6;
   const A = J.map(r => [...r]);
@@ -2041,14 +2041,14 @@ function _inv6(J) {
   return I;
 }
 
-// ─── Rotation matrix from RPW degrees (same convention as poseFromXYZRPW_JS) ─
+// Rotation matrix from RPW degrees (same convention as poseFromXYZRPW_JS)
 function _rpwToR(rpw) {
   const rx=rpw[0]*D2R, ry=rpw[1]*D2R, rz=rpw[2]*D2R;
   const cx=Math.cos(rx),sx=Math.sin(rx), cy=Math.cos(ry),sy=Math.sin(ry), cz=Math.cos(rz),sz=Math.sin(rz);
   return [[cy*cz,cz*sx*sy-cx*sz,cx*cz*sy+sx*sz],[cy*sz,cx*cz+sx*sy*sz,cx*sy*sz-cz*sx],[-sy,cy*sx,cx*cy]];
 }
 
-// ─── Orientation error as rotation vector [rad] ───────────────────────────────
+// Orientation error as rotation vector [rad]
 function _orientError(tgt_rpw, cur_rpw) {
   const Rt = _rpwToR(tgt_rpw), Rc = _rpwToR(cur_rpw);
   const R = Rt.map(ri => [0,1,2].map(j => ri[0]*Rc[j][0]+ri[1]*Rc[j][1]+ri[2]*Rc[j][2]));
@@ -2058,7 +2058,7 @@ function _orientError(tgt_rpw, cur_rpw) {
   return [(R[2][1]-R[1][2])*f, (R[0][2]-R[2][0])*f, (R[1][0]-R[0][1])*f];
 }
 
-// ─── MoveJ — joint-space motion ──────────────────────────────────────────────
+// MoveJ - joint-space motion
 function _updateTargetInputs(pose) {
   ['px','py','pz','rx','ry','rz'].forEach((id, i) =>
     document.getElementById(id).value = pose[i].toFixed(2));
@@ -2094,7 +2094,7 @@ function MoveJ(...args) {
   requestAnimationFrame(tick);
 }
 
-// ─── MoveL — Cartesian linear motion via J⁻¹ ─────────────────────────────────
+// MoveL - Cartesian linear motion via J⁻¹
 function MoveL(...args) {
   if (!currentDH) { conLog('MoveL: no robot loaded', 'err'); return; }
   if (args.length !== 6) { conLog('MoveL: need x,y,z,rx,ry,rz', 'err'); return; }
@@ -2127,7 +2127,7 @@ function MoveL(...args) {
       const rv = eig3sym(aat3([J[3],J[4],J[5]]));
       const mt = Math.sqrt(Math.max(0, tv.vals[0]*tv.vals[1]*tv.vals[2]));
       const mo = Math.sqrt(Math.max(0, rv.vals[0]*rv.vals[1]*rv.vals[2]));
-      conLog(`MoveL stopped: singularity — μ=${w.toExponential(2)}, μt=${mt.toExponential(2)}, μo=${mo.toExponential(2)}`, 'err');
+      conLog(`MoveL stopped: singularity  -  μ=${w.toExponential(2)}, μt=${mt.toExponential(2)}, μo=${mo.toExponential(2)}`, 'err');
       return;
     }
 
@@ -2161,7 +2161,7 @@ function MoveL(...args) {
   requestAnimationFrame(tick);
 }
 
-// ─── Export loaded .robot as .yaml (downloaded to disk) ─────────────────────
+// Export loaded .robot as .yaml (downloaded to disk)
 function _fmtAngle(rad) {
   const cands = [[0,1],[1,2],[-1,2],[1,1],[-1,1],[3,2],[-3,2],[1,4],[-1,4]];
   for (const [n, d] of cands) {
@@ -2192,17 +2192,17 @@ function _downloadYaml(preset) {
   a.click(); URL.revokeObjectURL(a.href);
 }
 
-// ─── WASM sync ───────────────────────────────────────────────────────────────
+// WASM sync
 function syncWASM() {
   if (!IKDH || !currentDH) return;
   try {
     IKDH.setRobot(currentDH.a, currentDH.d, currentDH.alpha, currentDH.theta, currentDH.lo, currentDH.hi);
   } catch(e) {
-    // degenerate DH during mid-edit (e.g. empty field while typing "-90") — ignore
+    // degenerate DH during mid-edit (e.g. empty field while typing "-90")  -  ignore
   }
 }
 
-// ─── Load a robot preset ─────────────────────────────────────────────────────
+// Load a robot preset
 function computeReach(dh) {
   const f = forwardKin(dh, [0,0,0,0,0,0]);
   let r = 0.1;
@@ -2242,7 +2242,7 @@ function loadRobot(preset) {
   _logRobotLoad(preset);
 }
 
-// ─── IK ──────────────────────────────────────────────────────────────────────
+// IK
 function clearResults() {
   solutions = [];
   document.getElementById('res').style.display = 'none';
@@ -2277,7 +2277,7 @@ function runSolve() {
     sols = IKDH.solve(sx, sy, sz, srx, sry, srz);
   } catch(e) {
     if (String(e).includes('Aborted')) {
-      conLog('Solver aborted — DH configuration not supported.', 'err');
+      conLog('Solver aborted  -  DH configuration not supported.', 'err');
       _reloadWASM();
     } else {
       conLog('Solver error: ' + e, 'err');
@@ -2326,7 +2326,7 @@ function runSolve() {
 
 document.getElementById('btn').addEventListener('click', runSolve);
 
-// ─── Tool Add / Remove ───────────────────────────────────────────────────────
+// Tool Add / Remove
 document.getElementById('tool-btn').addEventListener('click', () => {
   _toolActive = !_toolActive;
   const btn = document.getElementById('tool-btn');
@@ -2337,7 +2337,7 @@ document.getElementById('tool-btn').addEventListener('click', () => {
   updateScene(q);
 });
 
-// ─── Load robot from file ────────────────────────────────────────────────────
+// Load robot from file
 document.getElementById('load-btn').addEventListener('click', () => {
   document.getElementById('load-file').click();
 });
@@ -2379,7 +2379,7 @@ document.getElementById('load-file').addEventListener('change', e => {
   });
 });
 
-// ─── Tab switching ───────────────────────────────────────────────────────────
+// Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -2390,7 +2390,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// ─── View toggles ────────────────────────────────────────────────────────────
+// View toggles
 document.getElementById('show-frames').addEventListener('change', () => updateScene(currentQ));
 document.getElementById('show-joints').addEventListener('change', () => updateScene(currentQ));
 document.getElementById('show-bg').addEventListener('change', e => { grid.visible = e.target.checked; });
@@ -2400,13 +2400,13 @@ document.getElementById('show-ee').addEventListener('change', e => {
   updateScene(currentQ);
 });
 
-// ─── Tool inputs ─────────────────────────────────────────────────────────────
+// Tool inputs
 document.getElementById('tool-section').addEventListener('input', () => {
   currentTool = readTool();
   updateScene(currentQ);
 });
 
-// ─── WASM init ───────────────────────────────────────────────────────────────
+// WASM init
 let _wasmReady   = false;
 let _robotReady  = false;
 function _tryEnableBtn() {
@@ -2431,7 +2431,7 @@ function _reloadWASM() {
 }
 
 initAnalysis(scene);
-// Show robot in 3D immediately — FK is pure JS, no WASM needed
+// Show robot in 3D immediately  -  FK is pure JS, no WASM needed
 loadRobotFromCatalog(ROBOTS[0]).then(() => { _robotReady = true; _tryEnableBtn(); });
 
 createIKDHModule().then(mod => {
