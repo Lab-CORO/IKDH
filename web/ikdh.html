@@ -2276,10 +2276,11 @@ function runSolve() {
   try {
     sols = IKDH.solve(sx, sy, sz, srx, sry, srz);
   } catch(e) {
-    conLog('Solver error: ' + e, 'err');
     if (String(e).includes('Aborted')) {
-      conLog('The HuPf algorithm does not support this DH configuration (consecutive joint axes may be parallel — check alpha values).', 'err');
+      conLog('Solver aborted — DH configuration not supported.', 'err');
       _reloadWASM();
+    } else {
+      conLog('Solver error: ' + e, 'err');
     }
     return;
   }
