@@ -2195,7 +2195,11 @@ function _downloadYaml(preset) {
 // ─── WASM sync ───────────────────────────────────────────────────────────────
 function syncWASM() {
   if (!IKDH || !currentDH) return;
-  IKDH.setRobot(currentDH.a, currentDH.d, currentDH.alpha, currentDH.theta, currentDH.lo, currentDH.hi);
+  try {
+    IKDH.setRobot(currentDH.a, currentDH.d, currentDH.alpha, currentDH.theta, currentDH.lo, currentDH.hi);
+  } catch(e) {
+    // degenerate DH during mid-edit (e.g. empty field while typing "-90") — ignore
+  }
 }
 
 // ─── Load a robot preset ─────────────────────────────────────────────────────
@@ -2268,7 +2272,13 @@ function runSolve() {
   }
 
   const t0 = performance.now();
-  const sols = IKDH.solve(sx, sy, sz, srx, sry, srz);
+  let sols;
+  try {
+    sols = IKDH.solve(sx, sy, sz, srx, sry, srz);
+  } catch(e) {
+    conLog('Solver error: ' + e, 'err');
+    return;
+  }
   const ms = (performance.now() - t0).toFixed(1);
 
   clearResults();
