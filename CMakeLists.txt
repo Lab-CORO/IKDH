@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(IKDH VERSION 1.2.0 LANGUAGES CXX)
+project(IKDH VERSION 2.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -22,29 +22,19 @@ if(MSVC)
     add_compile_definitions(_USE_MATH_DEFINES)
 endif()
 
-# IKDH library (HuPf solver bundled in - one lib, no cross-lib boundary)
+# IKDH library
 add_library(ikdh STATIC
     src/ikdh.cpp
-    src/hupf/Calculate.cpp
-    src/hupf/ik.cpp
 )
 target_include_directories(ikdh
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    PRIVATE src
 )
-# LIBHUPF_EXPORTS is private: tells hupf headers to use dllexport (not dllimport)
-# within this compilation unit  -  safe and correct for a static library build
-target_compile_definitions(ikdh PRIVATE LIBHUPF_EXPORTS)
 target_link_libraries(ikdh PRIVATE Threads::Threads)
 target_compile_options(ikdh PRIVATE
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:
         -march=native
-        -Wno-unknown-pragmas
-        -Wno-deprecated-declarations
-        -Wno-parentheses
-        -Wno-unused-function
     >
 )
 
@@ -62,10 +52,6 @@ target_link_libraries(run_from_DH PRIVATE ikdh)
 add_executable(run_from_yaml examples/cpp/run_from_yaml.cpp)
 target_include_directories(run_from_yaml PRIVATE include examples/cpp)
 target_link_libraries(run_from_yaml PRIVATE ikdh)
-
-add_executable(derive_poly tools/derive_poly.cpp)
-target_include_directories(derive_poly PRIVATE include)
-target_link_libraries(derive_poly PRIVATE ikdh)
 
 add_executable(run_benchmark tools/run_benchmark.cpp)
 target_include_directories(run_benchmark PRIVATE include)

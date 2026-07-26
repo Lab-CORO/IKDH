@@ -4,8 +4,8 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "ikdh"
-version = "1.2.0"
-description = "Inverse kinematics for general 6R serial robots (Husty-Pfurner algebraic method)"
+version = "2.0.0"
+description = "Lightweight inverse kinematics for general 6R serial robots (Jacobian + Halton multi-start Newton refinement)"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }

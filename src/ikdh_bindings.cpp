@@ -45,7 +45,7 @@ static py::list jointConfigsToList(const std::vector<JointConfig>& sols)
 
 PYBIND11_MODULE(_ikdh, m)
 {
-    m.doc() = "IKDH  -  Inverse kinematics for 6R serial robots (HuPf algebraic method)";
+    m.doc() = "IKDH  -  Lightweight inverse kinematics for 6R serial robots (Jacobian + Halton multi-start Newton refinement)";
 
     // DHTable
     py::class_<DHTable>(m, "DHTable")

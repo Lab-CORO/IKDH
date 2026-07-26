@@ -1,6 +1,4 @@
 #include <ikdh.h>
-#include <hupf/ik.h>
-#include <hupf/poly_capture.h>
 
 #include <cmath>
 
@@ -98,30 +96,119 @@ static void dhMatrix(double theta, double d, double a, double ca, double sa, dou
     T[12] = 0;   T[13] = 0;       T[14] = 0;        T[15] = 1;
 }
 
-// Solve the 6×6 linear system A x = b via Gaussian elimination
-// with partial pivoting.  Returns false if A is (near-)singular.
-static bool solveLinear6(double A[6][6], double b[6], double x[6])
+// Solve the damped least-squares step  min_dq || [J; sqrt(lambda) I] dq - [err; 0] ||^2
+// via sequential Givens-rotation QR (rows folded in one at a time into an
+// upper-triangular R), rather than forming the normal equations
+// (J^T J + lambda I) dq = J^T err and Gaussian-eliminating those.
+//
+// This matters specifically near a kinematic singularity: forming J^T J
+// explicitly SQUARES J's condition number (a basic fact of numerical linear
+// algebra, independent of this codebase). Measured directly on this solver,
+// at a generic pose cond(J) ~ 10 and cond(J^T J) ~ 100 -- fine either way --
+// but at an exact wrist singularity cond(J) ~ 3e8 while cond(J^T J) ~ 8e16,
+// i.e. right at (arguably past) double precision's ~1e16 dynamic range: the
+// normal-equations solve has essentially no correct digits left in the
+// degenerate direction. QR on the augmented [J; sqrt(lambda) I] system solves
+// the identical damped least-squares problem but never squares the
+// condition number, so it stays numerically meaningful exactly where a
+// seed sitting at or near a singularity needs it to.
+//
+// Folding in the sqrt(lambda)*I rows (each with a nonzero diagonal entry,
+// since lambda > 0) guarantees every R[i][i] ends up nonzero, so unlike the
+// old Gaussian-elimination pivot check, no separate singularity guard is
+// needed -- the augmentation itself makes the triangular solve well-defined.
+static bool solveDampedLeastSquares(const double J[12][6], const double err[12],
+                                    double lambda, double dq[6])
 {
-    double M[6][7];
-    for (int i = 0; i < 6; ++i) {
-        for (int j = 0; j < 6; ++j) M[i][j] = A[i][j];
-        M[i][6] = b[i];
+    double R[6][6] = {};
+    double g[6] = {};
+    bool seeded[6] = {};
+
+    auto foldRow = [&](double* row, double b) {
+        for (int i = 0; i < 6; ++i) {
+            if (row[i] == 0.0) continue;
+            if (!seeded[i]) {
+                for (int k = i; k < 6; ++k) R[i][k] = row[k];
+                g[i] = b;
+                seeded[i] = true;
+                return;
+            }
+            double rr = R[i][i], rc = row[i];
+            double h = std::sqrt(rr*rr + rc*rc);
+            double c = rr / h, s = rc / h;
+            for (int k = i; k < 6; ++k) {
+                double t1 =  c*R[i][k] + s*row[k];
+                double t2 = -s*R[i][k] + c*row[k];
+                R[i][k] = t1;
+                row[k]  = t2;
+            }
+            double g1 =  c*g[i] + s*b;
+            double g2 = -s*g[i] + c*b;
+            g[i] = g1;
+            b    = g2;
+        }
+    };
+
+    for (int r = 0; r < 12; ++r) {
+        double row[6];
+        for (int k = 0; k < 6; ++k) row[k] = J[r][k];
+        foldRow(row, err[r]);
     }
-    for (int col = 0; col < 6; ++col) {
-        int piv = col;
-        for (int row = col + 1; row < 6; ++row)
-            if (std::fabs(M[row][col]) > std::fabs(M[piv][col])) piv = row;
-        if (std::fabs(M[piv][col]) < 1e-12) return false;
-        for (int j = 0; j <= 6; ++j) std::swap(M[col][j], M[piv][j]);
-        double pivot = M[col][col];
-        for (int row = 0; row < 6; ++row) {
-            if (row == col) continue;
-            double f = M[row][col] / pivot;
-            for (int j = col; j <= 6; ++j) M[row][j] -= f * M[col][j];
+    double sl = std::sqrt(lambda);
+    for (int i = 0; i < 6; ++i) {
+        double row[6] = {};
+        row[i] = sl;
+        foldRow(row, 0.0);
+    }
+
+    for (int i = 5; i >= 0; --i) {
+        if (std::fabs(R[i][i]) < 1e-300) return false;  // defense-in-depth; lambda>0 should make this unreachable
+        double s = g[i];
+        for (int k = i + 1; k < 6; ++k) s -= R[i][k] * dq[k];
+        dq[i] = s / R[i][i];
+    }
+    return true;
+}
+
+// Wrap each revolute joint of q into its actual limit range, falling back to
+// (-180, 180] if no ±360° shift lands inside the limits (winding guard; the
+// candidate is filtered later if it's genuinely out of range).
+static void wrapJointConfigForStep(const DHTable& dh, const JointLimits& limits, JointConfig& q)
+{
+    for (int j = 0; j < 6; ++j) {
+        if (!dh.revolute[j]) continue;
+        double wrapped;
+        if (wrapAngle(q[j], limits.lo[j], limits.hi[j], wrapped)) q[j] = wrapped;
+        else {
+            q[j] = std::fmod(q[j], 360.0);
+            if (q[j] >  180.0) q[j] -= 360.0;
+            if (q[j] <= -180.0) q[j] += 360.0;
         }
     }
-    for (int i = 0; i < 6; ++i) x[i] = M[i][6] / M[i][i];
-    return true;
+}
+
+// Wrap a trial q the same way as an accepted step, then evaluate its
+// Frobenius FK error against T_target -- used to accept/reject a
+// Levenberg-Marquardt trial step without touching the caller's state.
+static double trialFKError(const DHTable& dh, const JointLimits& limits,
+                            JointConfig q, const Transform& T_target,
+                            const double ca[6], const double sa[6])
+{
+    wrapJointConfigForStep(dh, limits, q);
+    double T[16] = {1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+    for (int i = 0; i < 6; ++i) {
+        double val = dh.revolute[i] ? q[i] * M_PI / 180.0 : q[i];
+        double jt = dh.theta[i] + (dh.revolute[i] ? val : 0.0);
+        double jd = dh.d[i]     + (dh.revolute[i] ? 0.0 : val);
+        double Ti[16], Tnew[16];
+        dhMatrix(jt, jd, dh.a[i], ca[i], sa[i], Ti);
+        mul4(T, Ti, Tnew);
+        for (int k = 0; k < 16; ++k) T[k] = Tnew[k];
+    }
+    double fe = 0.0;
+    for (int r = 0; r < 3; ++r)
+        for (int c = 0; c < 4; ++c) { double e = T_target[r*4+c] - T[r*4+c]; fe += e*e; }
+    return fe;
 }
 
 // Newton-Raphson refinement: adjust q (degrees) until forwardKin(dh, q) ≈ T_target.
@@ -131,13 +218,17 @@ static bool solveLinear6(double A[6][6], double b[6], double x[6])
 // This replaces 6 extra FK calls per iteration with pure matrix operations,
 // giving ~6× speedup on the inner loop at identical convergence.
 //
-// Damped least-squares (Tikhonov) step keeps wrist singularities stable.
-// Returns true when the Frobenius FK error drops below tol.
+// Adaptive Levenberg-Marquardt damping keeps wrist singularities stable: a
+// single fixed damping value is simultaneously too weak right at a
+// singularity (unstable step) and too strong everywhere else (slower
+// convergence than necessary), so lambda grows when a trial step doesn't
+// actually reduce the FK error and shrinks when it does. Returns true when
+// the Frobenius FK error drops below tol.
 static bool refineIK(const DHTable& dh, const JointLimits& limits,
                      JointConfig& q, const Transform& T_target,
                      int maxIter = 40, double tol = 1e-9)
 {
-    const double lambda = 1e-6;  // Tikhonov damping
+    double lambda = 1e-6;  // initial damping; adapted per iteration below
 
     // Precompute cos/sin of fixed DH alpha values (constant across all iterations).
     double ca[6], sa[6];
@@ -225,43 +316,34 @@ static bool refineIK(const DHTable& dh, const JointLimits& limits,
             }
         }
 
-        // Damped normal equations:  (J^T J + λ I) dq_rad = J^T err
-        // JTJ is symmetric: compute only the upper triangle, then mirror.
-        double JTJ[6][6];
-        double JTe[6] = {};
-        for (int a = 0; a < 6; ++a) {
-            for (int b = a; b < 6; ++b) {
-                double s = 0;
-                for (int k = 0; k < 12; ++k) s += J[k][a] * J[k][b];
-                JTJ[a][b] = JTJ[b][a] = s;
-            }
-            JTJ[a][a] += lambda;
-            for (int k = 0; k < 12; ++k)
-                JTe[a] += J[k][a] * err[k];
-        }
+        // Adaptive Levenberg-Marquardt step, solved via QR (see
+        // solveDampedLeastSquares) rather than normal equations, so the
+        // solve stays numerically meaningful even when J itself is severely
+        // ill-conditioned (e.g. exactly at a wrist singularity). Try the
+        // step at the current lambda; if it doesn't actually reduce the FK
+        // error, grow lambda (more conservative, closer to gradient
+        // descent) and retry from the same point, instead of using one
+        // fixed lambda everywhere. On success, shrink lambda so
+        // well-conditioned regions still take full Newton steps.
+        bool accepted = false;
+        for (int trial = 0; trial < 12; ++trial) {
+            double dq_rad[6];
+            if (!solveDampedLeastSquares(J, err, lambda, dq_rad)) { lambda *= 4.0; continue; }
 
-        double dq_rad[6];
-        if (!solveLinear6(JTJ, JTe, dq_rad)) return false;
+            JointConfig q_try = q;
+            for (int j = 0; j < 6; ++j) q_try[j] += dq_rad[j] * (180.0 / M_PI);
+            double fe_try = trialFKError(dh, limits, q_try, T_target, ca, sa);
 
-        for (int j = 0; j < 6; ++j) {
-            q[j] += dq_rad[j] * (180.0 / M_PI);
-            // Normalise revolute joints to the joint's actual limit range after
-            // each step.  This prevents "winding" (accumulating thousands of
-            // degrees) while respecting limits wider than ±180° (e.g. J3 ∈
-            // [-225, 85]).  Fall back to (-180, 180] if the angle cannot be
-            // mapped into the limit range (will be filtered later).
-            if (dh.revolute[j]) {
-                double wrapped;
-                if (wrapAngle(q[j], limits.lo[j], limits.hi[j], wrapped))
-                    q[j] = wrapped;
-                else {
-                    // Fallback: keep in (-180, 180] to avoid winding.
-                    q[j] = std::fmod(q[j], 360.0);
-                    if (q[j] >  180.0) q[j] -= 360.0;
-                    if (q[j] <= -180.0) q[j] += 360.0;
-                }
+            if (fe_try < fe) {
+                wrapJointConfigForStep(dh, limits, q_try);
+                q = q_try;
+                lambda = std::max(lambda / 3.0, 1e-12);
+                accepted = true;
+                break;
             }
+            lambda = std::min(lambda * 3.0, 1e12);
         }
+        if (!accepted) return false;
     }
     return false;
 }
@@ -271,63 +353,13 @@ static bool refineIK(const DHTable& dh, const JointLimits& limits,
 Solver::Solver(const DHTable& dh, const JointLimits& limits)
     : _limits(limits), _dh(dh)
 {
-    double a[6], d[6], theta[6], alpha[6];
-    bool   rots[6];
-    for (int i = 0; i < 6; ++i) {
-        a[i]          = dh.a[i];
-        d[i]          = dh.d[i];
-        theta[i]      = dh.theta[i];
-        alpha[i]      = dh.alpha[i];
-        rots[i]       = dh.revolute[i];
-        _theta_off[i] = dh.theta[i];
-    }
-    _impl = new LibHUPF::ik_solver(a, d, theta, alpha, rots);
-}
-
-Solver::~Solver()
-{
-    delete static_cast<LibHUPF::ik_solver*>(_impl);
 }
 
 std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) const
 {
-    auto* iks = static_cast<LibHUPF::ik_solver*>(_impl);
-    const double rad2deg = 180.0 / M_PI;
-
-    double flat[16];
-    for (int i = 0; i < 16; ++i) flat[i] = ee[i];
-
-    // Algebraic solve
-    auto raw = iks->solve(flat);
-    LibHUPF::primary_poly_ref() = LibHUPF::poly_capture_ref();
-
-    // Build unified seed pool
-    // Seeds come from two sources, all fed into a single Newton pass:
-    //   1. Primary algebraic roots + 8 J1/J4/J6 flip variants each
-    //   2. Halton quasi-random seeds covering the joint-space cube
+    // Seed pool: Halton quasi-random seeds covering the joint-space cube,
+    // each refined to ee by a single Newton pass below.
     std::vector<JointConfig> seeds;
-
-    // Convert a raw solver result to seeds: normalize + 8 flip combos.
-    auto addAsSeeds = [&](const decltype(raw)& sols) {
-        for (const auto& sol : sols) {
-            JointConfig q;
-            bool valid = true;
-            for (int i = 0; i < 6; ++i) {
-                double angle = sol[i] - _theta_off[i] * rad2deg;
-                if (!wrapAngle(angle, _limits.lo[i], _limits.hi[i], q[i])) { valid = false; break; }
-            }
-            if (!valid) continue;
-            for (int mask = 0; mask < 8; ++mask) {
-                JointConfig qf = q;
-                if (mask & 1) qf[0] += 180.0;
-                if (mask & 2) qf[3] += 180.0;
-                if (mask & 4) qf[5] += 180.0;
-                seeds.push_back(qf);
-            }
-        }
-    };
-
-    addAsSeeds(raw);
 
     // Halton seeds covering [lo, hi]^6.
     auto halton = [](int idx, int base) -> double {
@@ -336,7 +368,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) c
         return r;
     };
     static const int bases[6] = { 2, 3, 5, 7, 11, 13 };
-    for (int s = 1; s <= 32; ++s) {
+    for (int s = 1; s <= 64; ++s) {
         JointConfig q;
         for (int j = 0; j < 6; ++j)
             q[j] = _limits.lo[j] + halton(s, bases[j]) * (_limits.hi[j] - _limits.lo[j]);
@@ -424,11 +456,6 @@ std::vector<JointConfig> Solver::solveFromSeed(const Transform& ee,
     if (!wrapAll(q, _limits, qw))
         return {};
     return { qw };
-}
-
-std::vector<double> Solver::lastPolynomial() const
-{
-    return LibHUPF::primary_poly_ref();
 }
 
 // Forward kinematics

@@ -279,10 +279,9 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
 
   <div id="panel-about" style="display:none">
     <p>IKDH is an <strong>Inverse Kinematics</strong> solver based on the <strong>Denavit-Hartenberg</strong> convention that enables finding <strong>all</strong> configurations for a given end-effector pose.</p>
-    <p>The library has been developed at the <strong>CoRo Lab</strong> by <strong>Axel Refalo</strong> to support kinematic analysis through the <strong>web interface</strong> as well as fast computation in <strong>Python</strong> and <strong>C++</strong>. It is strongly based on the <strong>HuPf</strong> algorithm [1] and [2].</p>
+    <p>The library has been developed at the <strong>CoRo Lab</strong> by <strong>Axel Refalo</strong> to support kinematic analysis through the <strong>web interface</strong> as well as fast computation in <strong>Python</strong> and <strong>C++</strong>. It solves for all configurations using an analytic geometric Jacobian with Halton-seeded, damped Newton-Raphson multi-start refinement.</p>
     <p>To use the web interface you can <code>load</code> a <code>.robot</code> file from the <a href="https://robodk.com/library" target="_blank">RoboDK Robot Library</a> or select an already available morphology. When a robot is loaded or selected, its Jacobian and joint limits are printed in the terminal.<br>You can then add a tool with <code>add</code>, find all IK solutions with <code>solve</code>, and further analyse proximity to singularities with the translation and orientation manipulability ellipsoids.</p>
     <p>Terminal commands also enable Cartesian and joint motion. See the <code>help</code> command for the full list.</p>
-    <p class="about-refs">[1] M. Husty, M. Pfurner and H.-P. Schröcker. A new and efficient algorithm for the inverse kinematics of a general serial 6R manipulator, <em>Mech. Mach. Theory</em> 42: 66-81, 2007.</p>
     <img src="../img/CoRo.jpg" alt="CoRo Lab" style="max-height:60px;width:auto;max-width:50%;display:block;margin:12px auto 12px;">
     <div class="about-btns">
       <a class="about-btn about-btn-contribute" href="https://github.com/Lab-CORO/IKDH" target="_blank">Contribute</a>

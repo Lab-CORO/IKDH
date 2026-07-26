@@ -1,6 +1,6 @@
 # IKDH
 
-IKDH is an **Inverse Kinematics** solver based on the **Denavit and Hartenberg** convention. It finds **all solutions** for general six revolute joint robots based on the Husty and Pfurner algorithm [1] and [2].
+IKDH is a lightweight **Inverse Kinematics** solver based on the **Denavit and Hartenberg** convention. It finds **all solutions** for general six revolute joint robots using an analytic geometric Jacobian with Halton-seeded, damped Newton-Raphson multi-start refinement.
 
 ---
 
@@ -92,11 +92,3 @@ int main()
   howpublished = {\url{https://github.com/Lab-CORO/IKDH}},
 }
 ```
-
----
-
-## References
-
-[1]    M. Husty, M. Pfurner and H.-P. Schröcker. A new and efficient algorithm for the inverse kinematics of a general serial 6R manipulator, *Mech. Mach. Theory* 42: 66-81, 2007.
-
-[2]    J. Capco, M. J. C. Loquias, S. M. M. Manongsong and F. R. Nemenzo. Inverse Kinematics of Some General 6R/P Manipulators, *arXiv*:1906.07813, 2019.

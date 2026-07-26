@@ -21,12 +21,9 @@ OUT="$ROOT/web"
 
 echo "Building IKDH WASM..."
 emcc \
-    "$ROOT/src/hupf/Calculate.cpp" \
-    "$ROOT/src/hupf/ik.cpp" \
     "$ROOT/src/ikdh.cpp" \
     "$ROOT/src/ikdh_wasm.cpp" \
     -I "$ROOT/include" \
-    -I "$ROOT/src" \
     -std=c++17 \
     -O2 \
     --bind \

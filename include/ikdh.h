@@ -42,27 +42,20 @@ using JointConfig = std::array<double, 6>;
 class Solver {
 public:
     explicit Solver(const DHTable& dh, const JointLimits& limits = JointLimits{});
-    ~Solver();
 
     // Return all IK solutions within joint limits (up to 16 for a general 6R robot).
     // If expand_wraps is true, also includes ±360° equivalents within limits.
     std::vector<JointConfig> solve(const Transform& ee,
                                    bool expand_wraps = false) const;
 
-    // Warm-start IK: refine seed to ee via damped Newton-Raphson, bypassing the
-    // algebraic solver. Returns one solution if convergence is reached within
-    // limits, otherwise empty. Recommended for path planning (O(1) per waypoint).
+    // Warm-start IK: refine seed to ee via damped Newton-Raphson.
+    // Returns one solution if convergence is reached within limits, otherwise
+    // empty. Recommended for path planning (O(1) per waypoint).
     std::vector<JointConfig> solveFromSeed(const Transform& ee,
                                            const JointConfig& seed,
                                            int max_iter = 100) const;
 
-    // Coefficients (ascending) of the Sylvester resultant polynomial from the
-    // last solve() call on this thread. Empty if solve() has not been called.
-    std::vector<double> lastPolynomial() const;
-
 private:
-    void*       _impl;
-    double      _theta_off[6];
     JointLimits _limits;
     DHTable     _dh;
 };
