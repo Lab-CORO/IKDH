@@ -110,14 +110,18 @@ PYBIND11_MODULE(_ikdh, m)
         .def("solve",
             [](const Solver& solver,
                py::array_t<double, py::array::c_style | py::array::forcecast> ee,
-               bool expand_wraps) {
-                auto sols = solver.solve(numpyToTransform(ee), expand_wraps);
+               bool expand_wraps,
+               int n_seeds) {
+                auto sols = solver.solve(numpyToTransform(ee), expand_wraps, n_seeds);
                 return jointConfigsToList(sols);
             },
-            py::arg("ee"), py::arg("expand_wraps") = false,
+            py::arg("ee"), py::arg("expand_wraps") = false, py::arg("n_seeds") = 64,
             "Return all IK solutions for a 4x4 end-effector transform (numpy array).\n"
             "Each solution is a (6,) array in degrees. If expand_wraps=True, also\n"
-            "includes ±360° equivalents within joint limits.")
+            "includes ±360° equivalents within joint limits. n_seeds sets how many\n"
+            "Halton quasi-random seeds cover the joint-space cube before Newton\n"
+            "refinement; higher values trade speed for a better chance of finding\n"
+            "distant solution branches.")
         .def("solve_from_seed",
             [](const Solver& solver,
                py::array_t<double, py::array::c_style | py::array::forcecast> ee,

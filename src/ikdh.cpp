@@ -355,7 +355,7 @@ Solver::Solver(const DHTable& dh, const JointLimits& limits)
 {
 }
 
-std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) const
+std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps, int n_seeds) const
 {
     // Seed pool: Halton quasi-random seeds covering the joint-space cube,
     // each refined to ee by a single Newton pass below.
@@ -368,7 +368,7 @@ std::vector<JointConfig> Solver::solve(const Transform& ee, bool expand_wraps) c
         return r;
     };
     static const int bases[6] = { 2, 3, 5, 7, 11, 13 };
-    for (int s = 1; s <= 64; ++s) {
+    for (int s = 1; s <= n_seeds; ++s) {
         JointConfig q;
         for (int j = 0; j < 6; ++j)
             q[j] = _limits.lo[j] + halton(s, bases[j]) * (_limits.hi[j] - _limits.lo[j]);

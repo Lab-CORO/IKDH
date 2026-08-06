@@ -51,6 +51,7 @@ solver = ikdh.Solver(robot.dh, robot.limits)
 #                            x      y    z      roll pitch yaw
 ee   = ikdh.pose_from_xyzrpw(500.0, 0.0, 500.0, 0.0, 90.0, 0.0)
 sols = solver.solve(ee)   # list of (6,) numpy arrays, in degrees
+sols = solver.solve(ee, n_seeds=128)   # more Halton seeds = better odds of distant branches
 
 for q in sols:
     print(q)
@@ -70,6 +71,7 @@ int main()
 
     auto ee = IKDH::poseFromXYZRPW(500.0, 0.0, 500.0, 0.0, 90.0, 0.0);
     auto sols = solver.solve(ee);
+    // auto sols = solver.solve(ee, false, 128);  // expand_wraps, n_seeds
 
     for (size_t i = 0; i < sols.size(); ++i) {
         for (double q : sols[i]) printf("%.3f ", q);
@@ -83,7 +85,7 @@ int main()
 ### How to cite
 
 ```latex
-@misc{axel_ikdh_2026,
+@misc{ikdh2026,
   author       = {Axel Refalo},
   title        = {IKDH: An Inverse Kinematics Solver based Denavit and Hartenberg Convention},
   year         = {2026},

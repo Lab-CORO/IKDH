@@ -18,6 +18,8 @@ function initAnalysis(threeScene) {
 
   document.querySelector('.jac-eq-label').innerHTML =
     katex.renderToString('J =', {throwOnError: false});
+  document.getElementById('jac-rank-label').innerHTML =
+    katex.renderToString('\\operatorname{rank}(J) =', {throwOnError: false});
 }
 
 function clearAnalysisState() {
@@ -97,6 +99,30 @@ function _det6(J) {
     }
   }
   return s * A.reduce((d, r, i) => d * r[i], 1);
+}
+
+// Numerical rank of the 6×6 Jacobian via Gaussian elimination with partial
+// pivoting; tolerance scales with the matrix's own magnitude since J mixes
+// translational (m) and rotational (rad) units.
+function _rank6(J) {
+  const n = 6;
+  const A = J.map(r => [...r]);
+  let maxAbs = 0;
+  for (const row of A) for (const v of row) maxAbs = Math.max(maxAbs, Math.abs(v));
+  const eps = 1e-9 * Math.max(maxAbs, 1);
+  let rank = 0;
+  for (let col = 0; col < n && rank < n; col++) {
+    let piv = rank;
+    for (let r = rank + 1; r < n; r++) if (Math.abs(A[r][col]) > Math.abs(A[piv][col])) piv = r;
+    if (Math.abs(A[piv][col]) < eps) continue;
+    [A[rank], A[piv]] = [A[piv], A[rank]];
+    for (let r = rank + 1; r < n; r++) {
+      const f = A[r][col] / A[rank][col];
+      for (let k = col; k < n; k++) A[r][k] -= f * A[rank][k];
+    }
+    rank++;
+  }
+  return rank;
 }
 
 // DOM helpers
@@ -236,6 +262,8 @@ function _refreshDisplay() {
   if (!_Jspatial) return;
 
   _renderJacobianTable(_Jspatial);
+
+  document.getElementById('jac-rank-val').textContent = `${_rank6(_Jspatial)} / 6`;
 
   const w = Math.abs(_det6(_Jspatial));
   const [mant, exp] = w.toExponential(3).split('e');

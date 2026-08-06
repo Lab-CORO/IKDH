@@ -45,8 +45,12 @@ public:
 
     // Return all IK solutions within joint limits (up to 16 for a general 6R robot).
     // If expand_wraps is true, also includes ±360° equivalents within limits.
+    // n_seeds sets how many Halton quasi-random seeds cover the joint-space cube
+    // before Newton refinement; higher values trade speed for a better chance of
+    // finding distant solution branches.
     std::vector<JointConfig> solve(const Transform& ee,
-                                   bool expand_wraps = false) const;
+                                   bool expand_wraps = false,
+                                   int n_seeds = 64) const;
 
     // Warm-start IK: refine seed to ee via damped Newton-Raphson.
     // Returns one solution if convergence is reached within limits, otherwise
