@@ -125,12 +125,14 @@ table.jac tr:nth-child(odd) td { background: #fafafa; }
 #cb-ell-t, #cb-vec-t, #cb-ell-r, #cb-vec-r { accent-color: #1a73e8; }
 
 /* Right panel */
-#right { position: relative; background: #f0f0f0; }
+#right { display: flex; flex-direction: column; background: #f0f0f0; overflow: hidden; }
+#canvas-wrap { flex: 1; position: relative; min-height: 0; overflow: hidden; }
 canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
 #hint { position: absolute; bottom: 10px; right: 12px; font-size: 0.68rem; color: #aaa; pointer-events: none; }
+#grid-label { position: absolute; bottom: 10px; left: 12px; font-size: 0.62rem; color: #aaa; pointer-events: none; }
 
 /* Console */
-#con-panel { position: absolute; bottom: 0; left: 0; right: 0; height: 34px; background: #fff; font-family: system-ui, -apple-system, sans-serif; font-size: 0.71rem; z-index: 100; display: flex; flex-direction: column; border-top: 1px solid #e0e0e0; }
+#con-panel { flex-shrink: 0; height: 34px; background: #fff; font-family: system-ui, -apple-system, sans-serif; font-size: 0.71rem; display: flex; flex-direction: column; border-top: 1px solid #e0e0e0; }
 #con-handle { height: 34px; min-height: 34px; display: flex; align-items: center; padding: 0 12px; cursor: ns-resize; user-select: none; }
 #con-handle span { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #666; }
 #con-log { flex: 1; overflow-y: auto; padding: 4px 12px 2px; display: flex; flex-direction: column; gap: 1px; background: #fafafa; border-top: 1px solid #ebebeb; }
@@ -213,7 +215,7 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
   <div class="view-opts">
     <label><input type="checkbox" id="show-frames" checked> Frames</label>
     <label><input type="checkbox" id="show-joints"> Joints</label>
-    <label><input type="checkbox" id="show-bg" checked> Background</label>
+    <label><input type="checkbox" id="show-bg" checked> Grid</label>
     <label><input type="checkbox" id="show-ee"> End-effector</label>
   </div>
 
@@ -295,8 +297,11 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
 
 <!-- RIGHT PANEL -->
 <div id="right">
-  <canvas id="cv"></canvas>
-  <div id="hint">drag to orbit · scroll to zoom</div>
+  <div id="canvas-wrap">
+    <canvas id="cv"></canvas>
+    <div id="hint">drag to orbit · scroll to zoom</div>
+    <div id="grid-label"></div>
+  </div>
   <div id="con-panel">
     <div id="con-handle"><span>Terminal</span></div>
     <div id="con-log"></div>
@@ -306,6 +311,7 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
     </div>
   </div>
 </div>
+
 
 </div>
 
@@ -1539,7 +1545,7 @@ function parseRobotYaml(text, displayName) {
       if (t.startsWith('theta:') && t.includes('[')) theta = _parseArr(t.slice(6));
     }
     if (section === 'lim' && /^J\d:/.test(t)) {
-      const m = t.match(/\[([-\d.eE+]+)[,\s]+([-\d.eE+]+)\]/);
+      const m = t.match(/\[\s*([-\d.eE+]+)[,\s]+([-\d.eE+]+)\s*\]/);
       if (m) { lo.push(parseFloat(m[1])); hi.push(parseFloat(m[2])); }
     }
     if (section === 'jac' && t.startsWith('- [')) {
@@ -1762,9 +1768,10 @@ orbit.enableDamping = true;
 orbit.dampingFactor = 0.12;
 
 // Reference grid in the XY plane at Z=0 (floor in Z-up world)
-const grid = new THREE.GridHelper(2, 20, 0xbbbbbb, 0xdddddd);
+let grid = new THREE.GridHelper(2, 20, 0xbbbbbb, 0xdddddd);
 grid.rotation.x = Math.PI / 2;
 scene.add(grid);
+let _gridText = null;
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.65));
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
@@ -1976,12 +1983,64 @@ function updateScene(q_deg) {
   }
 }
 
+// Pick a round cell size for the grid given a target reach
+function _niceGridStep(reach) {
+  const raw = reach * 2.2 / 20;
+  const exp = Math.pow(10, Math.floor(Math.log10(raw)));
+  const m = raw / exp;
+  return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * exp;
+}
+
 // Reposition camera to frame the robot  -  only called on robot change
 function fitCamera(frames) {
   // Use the maximum reach from origin as the characteristic robot size
   let reach = 0.3;
   for (const f of frames)
     reach = Math.max(reach, Math.hypot(f[3], f[7], f[11]));
+
+  // Rebuild grid with a round cell size that fits the robot
+  const step = _niceGridStep(reach);
+  const total = step * 20;
+  scene.remove(grid);
+  grid = new THREE.GridHelper(total, 20, 0xbbbbbb, 0xdddddd);
+  grid.rotation.x = Math.PI / 2;
+  grid.visible = document.getElementById('show-bg').checked;
+  scene.add(grid);
+
+  // Update cell-size label (pick mm vs m based on magnitude)
+  const lbl = document.getElementById('grid-label');
+  if (lbl) {
+    const mm = step * 1000;
+    lbl.textContent = mm >= 1000 ? `${(mm/1000).toFixed(0)} m/div`
+                    : mm >= 1    ? `${Math.round(mm)} mm/div`
+                    :              `${(mm).toFixed(1)} mm/div`;
+  }
+
+  // IKDH watermark on front-right corner of grid (closest to default camera)
+  if (_gridText) { scene.remove(_gridText); _gridText.material.map.dispose(); _gridText.material.dispose(); _gridText.geometry.dispose(); _gridText = null; }
+  {
+    const cv2 = document.createElement('canvas');
+    const ctx2 = cv2.getContext('2d');
+    const fh = 64;
+    const font = `bold ${fh}px system-ui,-apple-system,sans-serif`;
+    ctx2.font = font;
+    const tw = Math.ceil(ctx2.measureText('IKDH').width);
+    cv2.width = tw + 16; cv2.height = fh + 16;
+    ctx2.font = font;
+    ctx2.fillStyle = 'rgba(170,170,170,0.5)';
+    ctx2.fillText('IKDH', 8, fh + 2);
+    const tex2 = new THREE.CanvasTexture(cv2);
+    const labelH = step * 0.85;
+    const labelW = labelH * (cv2.width / cv2.height);
+    const margin = step * 0.4;
+    _gridText = new THREE.Mesh(
+      new THREE.PlaneGeometry(labelW, labelH),
+      new THREE.MeshBasicMaterial({ map: tex2, transparent: true, side: THREE.DoubleSide, depthWrite: false })
+    );
+    _gridText.position.set(total / 2 - labelW / 2 - margin, -total / 2 + labelH / 2 + margin, 0.001);
+    _gridText.visible = document.getElementById('show-bg').checked;
+    scene.add(_gridText);
+  }
 
   const d = reach * 2.4;
   const tgt = new THREE.Vector3(0, 0, reach * 0.35);
@@ -1992,8 +2051,8 @@ function fitCamera(frames) {
 }
 
 function onResize() {
-  const el = document.getElementById('right');
-  const w = el.clientWidth, h = el.clientHeight;
+  const wrap = document.getElementById('canvas-wrap');
+  const w = wrap.clientWidth, h = wrap.clientHeight;
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
@@ -2221,11 +2280,11 @@ function _logRobotLoad(preset) {
     lim += `  J${i+1}[${(+preset.lo[i]).toFixed(0)}, ${(+preset.hi[i]).toFixed(0)}]°`;
   conLog(lim, 'inf');
   if (currentJacRows) {
-    conLog('Jacobian:', 'inf');
-    const rl = ['vx','vy','vz','ωx','ωy','ωz'];
-    currentJacRows.forEach((row, i) => {
-      conLog(`  ${rl[i]}  [ ${row.join(',  ')} ]`, 'inf');
+    const lines = ['jacobian:', '  rows:'];
+    currentJacRows.forEach(row => {
+      lines.push('    - [' + row.map(e => `"${e}"`).join(', ') + ']');
     });
+    conLog(lines.join('\n'), 'inf');
   } else {
     conLog('Jacobian: not available for this robot', 'inf');
   }
@@ -2395,7 +2454,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 // View toggles
 document.getElementById('show-frames').addEventListener('change', () => updateScene(currentQ));
 document.getElementById('show-joints').addEventListener('change', () => updateScene(currentQ));
-document.getElementById('show-bg').addEventListener('change', e => { grid.visible = e.target.checked; });
+document.getElementById('show-bg').addEventListener('change', e => { grid.visible = e.target.checked; if (_gridText) _gridText.visible = e.target.checked; });
 document.getElementById('show-ee').addEventListener('change', e => {
   _showEE = e.target.checked;
   if (!_showEE) _clearEEPath();
@@ -2467,10 +2526,12 @@ createIKDHModule().then(mod => {
     const h = Math.max(COLLAPSED, dragStartH - (e.clientY - dragStartY));
     if (Math.abs(e.clientY - dragStartY) > 3) didDrag = true;
     panel.style.height = h + 'px';
+    onResize();
   });
   document.addEventListener('mouseup', () => {
     if (dragging && !didDrag) {
       panel.style.height = (panel.offsetHeight <= COLLAPSED + 2 ? DEFAULT_H : COLLAPSED) + 'px';
+      onResize();
     }
     dragging = false;
   });
@@ -2535,7 +2596,7 @@ createIKDHModule().then(mod => {
     d.innerHTML = `<span class="ts">${ts}</span><span class="msg">${msg.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`;
     log.appendChild(d);
     log.scrollTop = log.scrollHeight;
-    if (panel.offsetHeight <= COLLAPSED + 2) panel.style.height = DEFAULT_H + 'px';
+    if (panel.offsetHeight <= COLLAPSED + 2) { panel.style.height = DEFAULT_H + 'px'; onResize(); }
   }
 
   window.conLog = function (msg, cls) { _conLine(msg, cls || 'inf'); };
