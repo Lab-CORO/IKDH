@@ -215,7 +215,7 @@ canvas#cv { display: block; width: 100%; height: 100%; background: #f2f2f2; }
   <div class="view-opts">
     <label><input type="checkbox" id="show-frames" checked> Frames</label>
     <label><input type="checkbox" id="show-joints"> Joints</label>
-    <label><input type="checkbox" id="show-bg" checked> Grid</label>
+    <label><input type="checkbox" id="show-bg" checked> Grids</label>
     <label><input type="checkbox" id="show-ee"> End-effector</label>
   </div>
 
@@ -1772,6 +1772,7 @@ let grid = new THREE.GridHelper(2, 20, 0xbbbbbb, 0xdddddd);
 grid.rotation.x = Math.PI / 2;
 scene.add(grid);
 let _gridText = null;
+let _vertGrid1 = null, _vertGrid2 = null;
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.65));
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
@@ -1991,6 +1992,18 @@ function _niceGridStep(reach) {
   return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * exp;
 }
 
+// Build a vertical grid in the local XZ plane (y=0) with square cells.
+// w = horizontal extent, h = vertical extent (from z=0 upward), uniform color.
+function _makeVertGrid(w, h, divW, divH, color) {
+  const sw = w / divW, sh = h / divH;
+  const v = [];
+  for (let i = 0; i <= divH; i++) v.push(-w/2, 0, i*sh,  w/2, 0, i*sh);
+  for (let j = 0; j <= divW; j++) { const x = -w/2 + j*sw; v.push(x, 0, 0,  x, 0, h); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+  return new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color }));
+}
+
 // Reposition camera to frame the robot  -  only called on robot change
 function fitCamera(frames) {
   // Use the maximum reach from origin as the characteristic robot size
@@ -2001,11 +2014,26 @@ function fitCamera(frames) {
   // Rebuild grid with a round cell size that fits the robot
   const step = _niceGridStep(reach);
   const total = step * 20;
+  const visbg = document.getElementById('show-bg').checked;
+
   scene.remove(grid);
   grid = new THREE.GridHelper(total, 20, 0xbbbbbb, 0xdddddd);
   grid.rotation.x = Math.PI / 2;
-  grid.visible = document.getElementById('show-bg').checked;
+  grid.visible = visbg;
   scene.add(grid);
+
+  // Two vertical reference planes intersecting at the robot base (Z axis).
+  // Plane 1: XZ (normal = world Y).  Plane 2: YZ (normal = world X), rotated PI/2.
+  // Custom LineSegments so cell aspect ratio is always 1:1 (step × step).
+  if (_vertGrid1) { scene.remove(_vertGrid1); _vertGrid1.geometry.dispose(); _vertGrid1.material.dispose(); _vertGrid1 = null; }
+  if (_vertGrid2) { scene.remove(_vertGrid2); _vertGrid2.geometry.dispose(); _vertGrid2.material.dispose(); _vertGrid2 = null; }
+  _vertGrid1 = _makeVertGrid(total, total / 2, 20, 10, 0xe0e0e0);
+  _vertGrid1.visible = visbg;
+  scene.add(_vertGrid1);
+  _vertGrid2 = _makeVertGrid(total, total / 2, 20, 10, 0xe0e0e0);
+  _vertGrid2.rotation.z = Math.PI / 2;
+  _vertGrid2.visible = visbg;
+  scene.add(_vertGrid2);
 
   // Update cell-size label (pick mm vs m based on magnitude)
   const lbl = document.getElementById('grid-label');
@@ -2454,7 +2482,13 @@ document.querySelectorAll('.tab').forEach(tab => {
 // View toggles
 document.getElementById('show-frames').addEventListener('change', () => updateScene(currentQ));
 document.getElementById('show-joints').addEventListener('change', () => updateScene(currentQ));
-document.getElementById('show-bg').addEventListener('change', e => { grid.visible = e.target.checked; if (_gridText) _gridText.visible = e.target.checked; });
+document.getElementById('show-bg').addEventListener('change', e => {
+  const v = e.target.checked;
+  grid.visible = v;
+  if (_gridText)  _gridText.visible  = v;
+  if (_vertGrid1) _vertGrid1.visible = v;
+  if (_vertGrid2) _vertGrid2.visible = v;
+});
 document.getElementById('show-ee').addEventListener('change', e => {
   _showEE = e.target.checked;
   if (!_showEE) _clearEEPath();
