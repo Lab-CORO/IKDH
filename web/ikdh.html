@@ -2203,7 +2203,8 @@ function MoveL(...args) {
   function tick() {
     if (step >= wps.length) {
       conLog('MoveL done', 'out');
-      const res = _solveAndSelect(curr_pose, currentQ);
+      _updateTargetInputs(target);
+      const res = _solveAndSelect(target, currentQ);
       if (res) conLog(`IK: ${res.n} solution${res.n !== 1 ? 's' : ''} (${res.ms} ms)`, 'out');
       return;
     }
