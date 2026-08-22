@@ -2201,7 +2201,12 @@ function MoveL(...args) {
 
   let step = 0;
   function tick() {
-    if (step >= wps.length) { conLog('MoveL done', 'out'); return; }
+    if (step >= wps.length) {
+      conLog('MoveL done', 'out');
+      const res = _solveAndSelect(curr_pose, currentQ);
+      if (res) conLog(`IK: ${res.n} solution${res.n !== 1 ? 's' : ''} (${res.ms} ms)`, 'out');
+      return;
+    }
     const wp = wps[step];
 
     const dp = [(wp[0]-curr_pose[0])/1000, (wp[1]-curr_pose[1])/1000, (wp[2]-curr_pose[2])/1000];
@@ -2342,6 +2347,59 @@ function clearResults() {
   clearAnalysisState();
 }
 
+// Solve IK at pose6=[x,y,z,rx,ry,rz] (mm/deg), populate solutions table,
+// and select the row closest to refQ (deg). If refQ is null, selects row 0.
+function _solveAndSelect(pose6, refQ) {
+  if (!IKDH || !currentDH) return;
+  syncWASM();
+  const t0 = performance.now();
+  let sols;
+  try { sols = IKDH.solve(pose6[0], pose6[1], pose6[2], pose6[3], pose6[4], pose6[5]); }
+  catch(e) { conLog('IK solve error: ' + e, 'err'); return; }
+  const ms = (performance.now() - t0).toFixed(1);
+  clearResults();
+  if (!sols || sols.length === 0) {
+    document.getElementById('no-sol').style.display = 'block';
+    return;
+  }
+  solutions = Array.from({ length: sols.length }, (_, i) =>
+    Array.from({ length: 6 }, (_, j) => sols[i][j])
+  );
+  const tbody = document.getElementById('res-body');
+  tbody.innerHTML = '';
+  solutions.forEach((sol, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td>` + sol.map(v => `<td>${v.toFixed(2)}<span class="cell-unit">°</span></td>`).join('');
+    tr.addEventListener('click', () => {
+      document.querySelectorAll('#res-body tr').forEach(r => r.classList.remove('sel'));
+      tr.classList.add('sel');
+      updateScene(sol);
+      computeAndDisplayJacobian(sol);
+    });
+    tbody.appendChild(tr);
+  });
+  document.getElementById('res').style.display = 'table';
+  document.getElementById('solutions-title').style.display = '';
+
+  // Pick the row closest to refQ (or row 0 if no reference)
+  let bestIdx = 0;
+  if (refQ) {
+    let bestDist = Infinity;
+    solutions.forEach((sol, i) => {
+      const d2 = sol.reduce((s, v, j) => {
+        let dd = Math.abs(v - refQ[j]) % 360;
+        if (dd > 180) dd = 360 - dd;
+        return s + dd * dd;
+      }, 0);
+      if (d2 < bestDist) { bestDist = d2; bestIdx = i; }
+    });
+  }
+  const rows = tbody.querySelectorAll('tr');
+  rows[bestIdx].classList.add('sel');
+  computeAndDisplayJacobian(solutions[bestIdx]);
+  return { n: solutions.length, branch: bestIdx + 1, ms };
+}
+
 function runSolve() {
   if (!IKDH || !currentDH) return;
   syncWASM();
@@ -2360,10 +2418,9 @@ function runSolve() {
     [sx, sy, sz, srx, sry, srz] = matToXYZRPW(T_flange);
   }
 
-  const t0 = performance.now();
-  let sols;
+  let res;
   try {
-    sols = IKDH.solve(sx, sy, sz, srx, sry, srz);
+    res = _solveAndSelect([sx, sy, sz, srx, sry, srz], null);
   } catch(e) {
     if (String(e).includes('Aborted')) {
       conLog('Solver aborted  -  DH configuration not supported.', 'err');
@@ -2373,44 +2430,13 @@ function runSolve() {
     }
     return;
   }
-  const ms = (performance.now() - t0).toFixed(1);
-
-  clearResults();
-
-  if (!sols || sols.length === 0) {
-    document.getElementById('no-sol').style.display = 'block';
-    conLog(`No solutions (${ms} ms)`, 'err');
+  if (!res) {
+    conLog('No solutions', 'err');
     updateScene([0,0,0,0,0,0]);
     return;
   }
-
-  solutions = Array.from({ length: sols.length }, (_, i) =>
-    Array.from({ length: 6 }, (_, j) => sols[i][j])
-  );
-
-  const tbody = document.getElementById('res-body');
-  tbody.innerHTML = '';
-  solutions.forEach((sol, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i+1}</td>` + sol.map(v => `<td>${v.toFixed(2)}<span class="cell-unit">°</span></td>`).join('');
-    tr.addEventListener('click', () => {
-      document.querySelectorAll('#res-body tr').forEach(r => r.classList.remove('sel'));
-      tr.classList.add('sel');
-      updateScene(sol);
-      computeAndDisplayJacobian(sol);
-    });
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById('res').style.display = 'table';
-  document.getElementById('solutions-title').style.display = '';
-  const msg = `Found ${solutions.length} solution${solutions.length !== 1 ? 's' : ''} in ${ms} ms`;
-  conLog(msg, 'out');
-
-  // Auto-select and display first solution
-  tbody.firstElementChild.classList.add('sel');
+  conLog(`Found ${res.n} solution${res.n !== 1 ? 's' : ''} in ${res.ms} ms`, 'out');
   updateScene(solutions[0]);
-  computeAndDisplayJacobian(solutions[0]);
 }
 
 document.getElementById('btn').addEventListener('click', runSolve);
