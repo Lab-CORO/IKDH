@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(IKDH VERSION 2.0.0 LANGUAGES CXX)
+project(IKDH VERSION 2.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -25,6 +25,7 @@ endif()
 # IKDH library
 add_library(ikdh STATIC
     src/ikdh.cpp
+    src/robot.cpp
 )
 target_include_directories(ikdh
     PUBLIC
@@ -99,8 +100,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND NOT SKBUILD)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
-    # Install public header
-    install(FILES include/ikdh.h
+    # Install public headers
+    install(FILES include/ikdh.h include/robot.h include/robots.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 

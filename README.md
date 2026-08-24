@@ -40,43 +40,60 @@ cmake -B build -S .
 cmake --build build
 ```
 
+Everything is built around a `Robot`, made from a DH table (either loaded from YAML or defined directly).
+
 ### Python example
 
 ```python
 import ikdh
 
-robot  = ikdh.load_robot("robots/your_robot.yaml")
-solver = ikdh.Solver(robot.dh, robot.limits)
+robot = ikdh.Robot.load_yaml("robots/your_robot.yaml")
+# or define the DH parameters directly:
+# robot = ikdh.Robot()
+# robot.define_dh(a, d, alpha, theta, limits)
 
-#                            x      y    z      roll pitch yaw
+#                                  x      y    z      roll pitch yaw
 ee   = ikdh.pose_from_xyzrpw(500.0, 0.0, 500.0, 0.0, 90.0, 0.0)
-sols = solver.solve(ee)   # list of (6,) numpy arrays, in degrees
-sols = solver.solve(ee, n_seeds=128)   # more Halton seeds = better odds of distant branches
+sols = robot.inverse_kinematics(ee)                # list of (6,) numpy arrays, in degrees
+sols = robot.inverse_kinematics(ee, n_seeds=128)   # more Halton seeds = better odds of distant branches
 
-for q in sols:
-    print(q)
+q    = sols[0]
+pose = robot.forward_kinematics(q)                 # (4, 4) numpy array
+
+J   = robot.jacobian(q)                # (6, 6) numpy array
+det = robot.jacobian_determinant(q)
+mu  = robot.manipulability(q)          # sqrt(det(J J^T))
+
+path = robot.move_l(ee, pose, q, n_points=50)      # joint angles from ee to pose, straight line in Cartesian space
+path = robot.move_j(q, sols[1], n_points=50)       # joint angles from q to sols[1], straight line in joint space
 ```
 
 ### C++ example
 
 ```cpp
-#include <ikdh.h>
-#include <robots.h>
+#include <robot.h>
 #include <cstdio>
 
 int main()
 {
-    auto robot = Robots::loadRobot("robots/gofa5.yaml");
-    IKDH::Solver solver(robot.dh, robot.limits);
+    auto robot = IKDH::Robot::loadYAML("robots/gofa5.yaml");
 
-    auto ee = IKDH::poseFromXYZRPW(500.0, 0.0, 500.0, 0.0, 90.0, 0.0);
-    auto sols = solver.solve(ee);
-    // auto sols = solver.solve(ee, false, 128);  // expand_wraps, n_seeds
+    auto ee   = IKDH::poseFromXYZRPW(500.0, 0.0, 500.0, 0.0, 90.0, 0.0);
+    auto sols = robot.inverseKinematics(ee);
+    // auto sols = robot.inverseKinematics(ee, 128);  // n_seeds
 
-    for (size_t i = 0; i < sols.size(); ++i) {
-        for (double q : sols[i]) printf("%.3f ", q);
-        printf("\n");
-    }
+    auto q    = sols[0];
+    auto pose = robot.forwardKinematics(q);
+
+    auto   J   = robot.jacobian(q);
+    double det = robot.jacobianDeterminant(q);
+    double mu  = robot.manipulability(q);
+
+    auto path  = robot.moveL(ee, pose, q, 50);
+    auto path2 = robot.moveJ(q, sols[1], 50);
+
+    for (double v : path.back()) printf("%.3f ", v);
+    printf("\n");
 }
 ```
 

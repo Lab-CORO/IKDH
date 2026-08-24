@@ -3,7 +3,7 @@
 #include <pybind11/stl.h>
 
 #include <ikdh.h>
-#include <robots.h>
+#include <robot.h>
 
 namespace py = pybind11;
 using namespace IKDH;
@@ -39,6 +39,32 @@ static py::list jointConfigsToList(const std::vector<JointConfig>& sols)
         result.append(arr);
     }
     return result;
+}
+
+static std::array<double, 6> vecToArray6(const std::vector<double>& v)
+{
+    if (v.size() != 6) throw std::runtime_error("Expected exactly 6 elements");
+    std::array<double, 6> a;
+    for (int i = 0; i < 6; ++i) a[i] = v[i];
+    return a;
+}
+
+static JointConfig numpyToJointConfig(py::array_t<double, py::array::c_style | py::array::forcecast> arr)
+{
+    if (arr.size() != 6) throw std::runtime_error("Expected 6 joint values");
+    JointConfig q;
+    const double* data = arr.data();
+    for (int i = 0; i < 6; ++i) q[i] = data[i];
+    return q;
+}
+
+static py::array_t<double> matrix6ToNumpy(const Matrix6& M)
+{
+    auto arr = py::array_t<double>({6, 6});
+    double* data = arr.mutable_data();
+    for (int r = 0; r < 6; ++r)
+        for (int c = 0; c < 6; ++c) data[r*6 + c] = M[r][c];
+    return arr;
 }
 
 // Module
@@ -170,12 +196,78 @@ PYBIND11_MODULE(_ikdh, m)
         py::arg("A"), py::arg("B"),
         "Σ(A_ij − B_ij)² over all 16 elements of two 4×4 transforms.");
 
-    // Robot loader
-    py::class_<Robots::Robot>(m, "Robot")
-        .def_readonly("name",   &Robots::Robot::name)
-        .def_readonly("dh",     &Robots::Robot::dh)
-        .def_readonly("limits", &Robots::Robot::limits);
+    // Robot  -  central object built around a DH table: FK, IK, Jacobian /
+    // manipulability, and moveL / moveJ path planning.
+    py::class_<Robot>(m, "Robot")
+        .def(py::init<>())
+        .def("define_dh",
+            [](Robot& r, std::vector<double> a, std::vector<double> d,
+               std::vector<double> alpha, std::vector<double> theta, const JointLimits& limits) {
+                r.defineDH(vecToArray6(a), vecToArray6(d), vecToArray6(alpha), vecToArray6(theta), limits);
+            },
+            py::arg("a"), py::arg("d"), py::arg("alpha"), py::arg("theta"),
+            py::arg("limits") = JointLimits{},
+            "Set the DH parameters (a/d in metres, alpha/theta in radians) and joint limits (degrees).")
+        .def_static("load_yaml", &Robot::loadYAML, py::arg("yaml_path"),
+            "Load DH parameters and joint limits from a robot YAML file.")
+        .def("forward_kinematics",
+            [](const Robot& r, py::array_t<double, py::array::c_style | py::array::forcecast> q) {
+                return transformToNumpy(r.forwardKinematics(numpyToJointConfig(q)));
+            },
+            py::arg("q"), "Forward kinematics. q in degrees. Returns a (4, 4) numpy array.")
+        .def("inverse_kinematics",
+            [](const Robot& r, py::array_t<double, py::array::c_style | py::array::forcecast> pose,
+               int n_seeds, bool expand_wraps) {
+                return jointConfigsToList(r.inverseKinematics(numpyToTransform(pose), n_seeds, expand_wraps));
+            },
+            py::arg("pose"), py::arg("n_seeds") = 64, py::arg("expand_wraps") = false,
+            "All IK solutions for a 4x4 end-effector pose (numpy array). n_seeds sets how "
+            "many Halton seeds cover the joint-space cube before Newton refinement.")
+        .def("jacobian",
+            [](const Robot& r, py::array_t<double, py::array::c_style | py::array::forcecast> q) {
+                return matrix6ToNumpy(r.jacobian(numpyToJointConfig(q)));
+            },
+            py::arg("q"),
+            "Geometric Jacobian at q (degrees). Returns a (6, 6) numpy array, rows "
+            "vx,vy,vz,wx,wy,wz and columns joints.")
+        .def("jacobian_determinant",
+            [](const Robot& r, py::array_t<double, py::array::c_style | py::array::forcecast> q) {
+                return r.jacobianDeterminant(numpyToJointConfig(q));
+            },
+            py::arg("q"), "Determinant of the geometric Jacobian at q (degrees).")
+        .def("manipulability",
+            [](const Robot& r, py::array_t<double, py::array::c_style | py::array::forcecast> q) {
+                return r.manipulability(numpyToJointConfig(q));
+            },
+            py::arg("q"), "Yoshikawa manipulability sqrt(det(J * J^T)) at q (degrees).")
+        .def("move_l",
+            [](const Robot& r,
+               py::array_t<double, py::array::c_style | py::array::forcecast> pose_a,
+               py::array_t<double, py::array::c_style | py::array::forcecast> pose_b,
+               py::array_t<double, py::array::c_style | py::array::forcecast> q0,
+               int n_points) {
+                return jointConfigsToList(r.moveL(numpyToTransform(pose_a), numpyToTransform(pose_b),
+                                                   numpyToJointConfig(q0), n_points));
+            },
+            py::arg("pose_a"), py::arg("pose_b"), py::arg("q0"), py::arg("n_points"),
+            "Cartesian path from pose_a to pose_b (4x4 numpy arrays) via inverse-Jacobian "
+            "steps, n_points waypoints including both ends, starting from joint config q0. "
+            "Stops early (returning what was found so far) if a step's error grows too "
+            "large or leaves the joint limits.")
+        .def("move_j",
+            [](const Robot& r,
+               py::array_t<double, py::array::c_style | py::array::forcecast> q_a,
+               py::array_t<double, py::array::c_style | py::array::forcecast> q_b,
+               int n_points) {
+                return jointConfigsToList(r.moveJ(numpyToJointConfig(q_a), numpyToJointConfig(q_b), n_points));
+            },
+            py::arg("q_a"), py::arg("q_b"), py::arg("n_points"),
+            "Joint-space path from q_a to q_b (degrees) via linear interpolation, n_points "
+            "waypoints including both ends.")
+        .def_readonly("name",   &Robot::name)
+        .def_readonly("dh",     &Robot::dh)
+        .def_readonly("limits", &Robot::limits);
 
-    m.def("load_robot", &Robots::loadRobot, py::arg("yaml_path"),
+    m.def("load_robot", &Robot::loadYAML, py::arg("yaml_path"),
           "Load a robot from a YAML file. Returns a Robot with .name, .dh, .limits.");
 }

@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "ikdh"
-version = "2.0.0"
+version = "2.1.0"
 description = "Lightweight inverse kinematics for general 6R serial robots (Jacobian + Halton multi-start Newton refinement)"
 readme = "README.md"
 requires-python = ">=3.8"
